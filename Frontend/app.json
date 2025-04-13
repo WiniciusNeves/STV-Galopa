@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Frontend",
+    "slug": "Frontend",
+    "extra": {
+      "API_URL": "test"
+    },
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#001C12"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon_background.png",
+        "backgroundColor": "#001C12"
+      }
+    },
+    "web": {
+      "favicon": "./assets/icon_fo.png"
+    }
+  }
+}
