@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // regras pra coleção de checklists
+    match /checklists/{document} {
+      allow create: if request.auth != null;
+      allow read, update, delete: if request.auth.token.role == 'admin';
+    }
+
+    // regras pra coleção de usuários (se quiser proteger)
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+  }
+}
