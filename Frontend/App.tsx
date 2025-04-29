@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { View, ActivityIndicator, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-import colors from './src/styles/colors';
+import colors from './src/styles/Colors';
 
 export default function LoadingScreen() {
   const navigation = useNavigation();

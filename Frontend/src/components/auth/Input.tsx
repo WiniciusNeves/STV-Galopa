@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextInput, View, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import colors from '../../styles/colors';
+import colors from '../../styles/Colors';
 
 interface InputProps extends React.ComponentProps<typeof TextInput> {
   icon: string;

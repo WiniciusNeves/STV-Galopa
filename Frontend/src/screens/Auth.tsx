@@ -5,14 +5,13 @@ import {
   Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native'; // Importar navegação
-import colors from '../styles/colors';
-import * as s from '../styles/auth';
+import colors from '../styles/Colors';
+import * as s from '../styles/Auth';
 import Input from '../components/auth/Input';
 import PasswordInput from '../components/auth/PasswordInput';
 import GradientButton from '../components/auth/GradientButton';
 import RememberSwitch from '../components/auth/RememberSwitch';
 
-//import { login } from '../service/userService'; // Importar serviço de autenticação
 
 export default function LoginScreen() {
   const navigation = useNavigation(); // Hook de navegação
@@ -21,14 +20,7 @@ export default function LoginScreen() {
   const [remember, setRemember] = useState(false);
 
   const handleLogin = async () => {
-    // const user = await login(email, password);
-    // if (user) {
-    //   navigation.navigate('Home'); // Navegar para a tela Home
-    // } else {
-    //   alert('Login failed. Please check your credentials.');
-    // }
-
-
+     navigation.navigate('ReportListScreen'); // Navegar para a tela principal após o login
   };
 
   const handleRememberMe = () => {
