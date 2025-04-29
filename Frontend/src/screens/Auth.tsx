@@ -5,12 +5,13 @@ import {
   Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native'; // Importar navegação
-import colors from '../styles/colors';
-import * as s from '../styles/auth';
+import colors from '../styles/Colors';
+import * as s from '../styles/Auth';
 import Input from '../components/auth/Input';
 import PasswordInput from '../components/auth/PasswordInput';
 import GradientButton from '../components/auth/GradientButton';
 import RememberSwitch from '../components/auth/RememberSwitch';
+
 
 export default function LoginScreen() {
   const navigation = useNavigation(); // Hook de navegação
@@ -18,10 +19,8 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(false);
 
-  const handleLogin = () => {
-    // Aqui você coloca a lógica de autenticação.
-    // Se estiver tudo certo:
-    navigation.replace('Home'); // Substitui a tela de login pela Home (ou outra)
+  const handleLogin = async () => {
+     navigation.navigate('ReportListScreen'); // Navegar para a tela principal após o login
   };
 
   const handleRememberMe = () => {
@@ -30,6 +29,7 @@ export default function LoginScreen() {
 
   return (
     <View style={s.container.base}>
+      <Image source={require('../assets/img/Cubes.png')} style={{ position: 'absolute', top: 0, width: '100%', height: '100%' }} />
       <Image source={require('../assets/img/logo.png')} style={s.imageStyle.base} />
 
       <View style={{ width: '90%', padding: 20, borderRadius: 10, alignItems: 'center', marginTop: 80 }}>

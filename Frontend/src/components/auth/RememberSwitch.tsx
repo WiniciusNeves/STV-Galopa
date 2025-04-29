@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, Switch, StyleSheet } from "react-native";
 import { useTheme } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
-import colors from '../../styles/colors';
+import colors from '../../styles/Colors';
 
 export default function RememberSwitch() {
     const { t } = useTranslation();

@@ -3,7 +3,8 @@ const serviceAccount = require("./serviceAccountKey.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  storageBucket: "stv-galope.appspot.com",
+  storageBucket: "stv-galope-f2eb4.appspot.com",
+
 });
 
 module.exports = admin;

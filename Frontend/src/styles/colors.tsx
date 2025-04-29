@@ -12,4 +12,8 @@ export default {
   text: '#FFFFFF',
   placeholder: '#C7C7C7',
   black: '#000000',
+  darkGreen: '#002C1B',
+  lightGreen: '#006F45',
+  darkCard: '#001C12',
+  greenlight: '#004E31',
 };
