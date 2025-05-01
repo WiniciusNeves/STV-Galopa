@@ -7,6 +7,7 @@ import App from './App';
 import ReportListScreen from './src/screens/ReportListScreen';
 
 import Auth from './src/screens/Auth';
+import Register from './src/screens/Register';
 
 
 const Stack = createStackNavigator();
@@ -19,6 +20,7 @@ export default function AppNavigator() {
           <Stack.Screen name="App" component={App} options={{ headerShown: false }} />
           <Stack.Screen name="Auth" component={Auth} options={{ headerShown: false }} />
           <Stack.Screen name="ReportListScreen" component={ReportListScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Register" component={Register} options={{ headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>
     </ToastProvider>

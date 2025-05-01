@@ -6,15 +6,27 @@ import colors from '../../styles/Colors';
 import { container, item, register } from '../../styles/MenuBottom';
 import { useToast } from '../../context/ToastContext'; // Adicionando o uso do Toast
 
+import { useNavigation } from '@react-navigation/native';
+
 interface MenuBottomProps {
   navigation: any;
   userRole: string;
 }
 
 export default function MenuBottom({ navigation, userRole }: MenuBottomProps) {
+
   const { showToast } = useToast(); // Hook do ToastContext
 
   const handleReportPress = () => {
+    if (userRole !== 'admin') {
+      showToast({
+        type: 'error',
+        text1: 'Acesso negado!',
+        text2: 'Você precisa da permissão de administrador para acessar relatórios.',
+      });
+      return;
+    }
+
     showToast({
       type: 'info',
       text1: 'Acessando relatórios...',
@@ -26,19 +38,15 @@ export default function MenuBottom({ navigation, userRole }: MenuBottomProps) {
   const handleTrackingPress = () => {
     showToast({
       type: 'info',
-      text1: 'Acessando rastreamento...',
-      text2: 'Verificando a localização...',
+      text1: 'Em manutenção...',
+      text2: 'O recurso de rastreamento está em desenvolvimento.',
     });
     
     
   };
 
   const handleRegisterPress = () => {
-    showToast({
-      type: 'success',
-      text1: 'Registrando novo item!',
-      text2: 'Você pode agora adicionar um novo registro.',
-    });
+    navigation.navigate('Register');
    
    
   };
@@ -47,8 +55,8 @@ export default function MenuBottom({ navigation, userRole }: MenuBottomProps) {
     <View style={container.base}>
       {/* Botão para acessar relatórios */}
       <TouchableOpacity style={item.base} onPress={handleReportPress}>
-        <Feather name="file-text" size={36} color="#fff" style={item.icon} />
-        <Text style={item.label}>Reportes</Text>
+        <MaterialIcons name="description" size={36} color="#fff" style={item.icon} />
+        <Text style={item.label}>Relatórios</Text>
       </TouchableOpacity>
 
       {/* Botão para registrar um novo item */}
@@ -68,9 +76,10 @@ export default function MenuBottom({ navigation, userRole }: MenuBottomProps) {
 
       {/* Botão para rastreamento */}
       <TouchableOpacity style={item.base} onPress={handleTrackingPress}>
-        <Feather name="map" size={36} color="#fff" style={item.icon} />
+        <MaterialIcons name="track-changes" size={36} color="#fff" style={item.icon} />
         <Text style={item.label}>Rastreamento</Text>
       </TouchableOpacity>
     </View>
   );
 }
+

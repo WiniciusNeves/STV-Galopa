@@ -1,20 +1,18 @@
-import axios from 'axios';
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
 
-import Config from 'react-native-config';
+const firebaseConfig = {
+  apiKey: "AIzaSyBK9n2sypkO-YamiHtFBoGg3ux5WNHNVAU",
+  authDomain: "stv-galope-f2eb4.firebaseapp.com",
+  projectId: "stv-galope-f2eb4",
+  storageBucket: "stv-galope-f2eb4.firebasestorage.app",
+  messagingSenderId: "312566559806",
+  appId: "1:312566559806:web:b32c165c147e9a524e4d6f",
+  measurementId: "G-FW940G1068"
+};
 
-const API_BASE_URL = Config.BASE_URL;
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 
-if (!API_BASE_URL) {
-    throw new Error('API_BASE_URL is not defined in .env');
-}
 
-const apiRouter = axios.create({
-    baseURL: API_BASE_URL
-});
-
-apiRouter.interceptors.response.use(
-    (response) => response,
-    (error) => Promise.reject(error)
-);
-
-export default apiRouter;
+export default app

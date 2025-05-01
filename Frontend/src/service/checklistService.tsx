@@ -1,5 +1,5 @@
 import axios from "axios";
-import apiRouter from "./firebaseConfig";
+import apiRouter from "./apiRouter";
 
 const api = apiRouter;
 

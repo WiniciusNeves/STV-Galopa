@@ -56,7 +56,7 @@ export default function ReportListScreen() {
                 style={{
                     width: '100%',
                     height: "15%",
-                    marginVertical: 50,
+                    marginBottom: 40,
                     borderBottomLeftRadius: 20,
                     borderBottomRightRadius: 20,
                 }}
