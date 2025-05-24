@@ -61,6 +61,15 @@ export default function ReportListScreen() {
                     borderBottomRightRadius: 20,
                 }}
             />
+            <Image
+                source={require('../assets/img/Cubes.png')}
+                style={{
+                    width: '100%',
+                    height: "100%",
+                    position: 'absolute',
+                    top: 0,
+                }}
+            />
 
             {/* Botões com animação */}
             <View style={{ marginHorizontal: 20, marginBottom: 20 }}>

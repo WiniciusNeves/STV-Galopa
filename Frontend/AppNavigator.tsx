@@ -3,11 +3,12 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ToastProvider } from './src/context/ToastContext';
 
+import 'react-native-get-random-values'
 import App from './App';
-import ReportListScreen from './src/screens/ReportListScreen';
 
 import Auth from './src/screens/Auth';
 import Register from './src/screens/Register';
+import ReportListScreen from './src/screens/ReportListScreen';
 
 
 const Stack = createStackNavigator();

@@ -6,10 +6,12 @@ import colors from '../../styles/Colors';
 interface GradientButtonProps {
   text: string;
   onPress: () => void;
+  style?: ViewStyle ; // Add this line
 }
-export default function GradientButton({ text, onPress }: GradientButtonProps) {
+
+export default function GradientButton({ text, onPress, style }: GradientButtonProps) {
   return (
-    <TouchableOpacity onPress={onPress} style={styles.button}>
+    <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
       <LinearGradient
         colors={[colors.degradeStart, colors.degradeEnd]}
         start={[0, 0]}
