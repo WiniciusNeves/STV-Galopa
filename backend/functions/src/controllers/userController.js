@@ -95,4 +95,3 @@ exports.setAdminRole = async (req, res) => {
     res.status(500).json({ error: error.message || "Erro ao definir role." });
   }
 };
-
