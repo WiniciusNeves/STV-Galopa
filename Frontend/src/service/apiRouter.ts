@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { API_URL } from '@env';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getValidToken } from './authService';
+
+import { getAuthData } from './authService';
 import { t } from 'i18next';
 
 if (!API_URL) {
@@ -14,8 +15,10 @@ const apiRouter = axios.create({
 
 apiRouter.interceptors.request.use(
   async (config) => {
-    // Pega um token novo e atualiza o AsyncStorage
-    const token = await getValidToken();
+    // Pega o token usando getAuthData
+    // 🎉 MUDANÇA AQUI: Chamar getAuthData e extrair o token 🎉
+    const authData = await getAuthData();
+    const token = authData.token; // O token está dentro do objeto retornado por getAuthData
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

@@ -1,65 +1,95 @@
 import { StyleSheet } from "react-native";
+import Colors from "./Colors";
 
-const styles = {
-    pickerContainer: {
-        backgroundColor: '#006644',
-        width: '85%',
-        borderRadius: 12,
-        justifyContent: 'center',
-    },
-    picker: {
-        color: 'white',
-        height: 50,
-        width: '100%',
-    },
-    button: {
-        width: '85%',
-        paddingVertical: 14,
-        borderRadius: 30,
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 3,
-    },
-    buttonText: {
-        color: 'white',
-        fontWeight: '600',
-        fontSize: 16,
-    },
-    select: {
-        width: '85%',
-        borderRadius: 12,
-        paddingHorizontal: 10,
-        backgroundColor: '#004d40',
-        marginBottom: 5,
-    },
-    input: {
-        width: '85%',
-        padding: 12,
-        backgroundColor: '#004d40',
-        borderRadius: 12,
-        color: 'white',
-    },
-    label: {
-        color: 'white',
-        marginTop: 20,
-        marginBottom: 5,
-        alignSelf: 'flex-start',
-        marginLeft: 20,
-    },
-
-    optionButton: {
-        backgroundColor: '#333',
-        padding: 10,
-        borderRadius: 8,
-    },
-    optionSelected: {
-        backgroundColor: '#00A86B',
-    },
-    optionText: {
-        color: 'white',
-    }
-
-
-};
-
-export default styles  
+export default StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  backgroundImage: {
+    position: "absolute",
+    top: 0,
+    width: "100%",
+    height: "100%",
+    zIndex: -1,
+  },
+  logo: {
+    width: "100%",
+    height: 160,
+  
+    marginBottom: 10,
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 120,
+  },
+  formContainer: {
+    flex: 1,
+  },
+  row: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 10,
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  flexItem: {
+    flex: 1,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+    
+  },
+  checkboxContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+    
+  },
+  checkboxLabel: {
+    marginLeft: 8,
+    fontSize: 16,
+    color: "#fff"
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  photoButton: {
+    flex: 1,
+    backgroundColor: Colors.primary,
+    padding: 12,
+    borderRadius: 8,
+    marginHorizontal: 5,
+  },
+  photoButtonText: {
+    color: "#fff",
+    textAlign: "center",
+  },
+  photoList: {
+    marginVertical: 10,
+  },
+  photoPreview: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginHorizontal: 5,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  photoImage: {
+    width: "100%",
+    height: "100%",
+  },
+  submitButton: {
+    width: "100%",
+   
+    alignItems: "center",
+  },
+});

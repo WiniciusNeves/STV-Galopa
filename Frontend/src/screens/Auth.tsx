@@ -16,34 +16,39 @@ import Input from '../components/auth/Input';
 import PasswordInput from '../components/auth/PasswordInput';
 import GradientButton from '../components/auth/GradientButton';
 import RememberSwitch from '../components/auth/RememberSwitch';
-import { login } from '../service/userService'; // Importe o login do userService
+import { login } from '../service/userService';
 
 export default function LoginScreen() {
     const navigation = useNavigation<any>();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [remember, setRemember] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const handleLogin = async () => {
+        if (!email || !password) {
+            Alert.alert('Erro', 'Por favor, preencha email e senha.');
+            return;
+        }
+        setLoading(true);
         try {
-            const user = await login(email, password);
+            const user = await login(email.trim(), password);
 
             if (!user) {
                 Alert.alert('Erro', 'Usuário ou senha inválidos.');
                 return;
             }
 
-            // O token, role e expiração já estão sendo salvos no AsyncStorage
-            // dentro da função login do userService (que chama getAuthData do authService)
-
             if (user.role === 'admin') {
                 navigation.replace('ReportListScreen');
             } else {
                 navigation.replace('Register');
             }
-        } catch (error) {
+        } catch (error: any) {
             Alert.alert('Erro', error.message || 'Erro ao realizar login.');
             console.error('[LOGIN] Erro ao fazer login:', error);
+        } finally {
+            setLoading(false);
         }
     };
 

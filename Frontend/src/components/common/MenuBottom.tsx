@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { View, TouchableOpacity, Text, Modal, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, TouchableOpacity, Text, Modal, Keyboard, Animated, StyleSheet } from 'react-native';
 import { MaterialIcons, Feather, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import colors from '../../styles/Colors';
-import { container, item, register } from '../../styles/MenuBottom';
-import { useToast } from '../../context/ToastContext'; // Adicionando o uso do Toast
+import colors from '../../styles/Colors'; // Certifique-se que o caminho está correto
+import { container, item, register, logout as logoutStyles, modal as modalStyles } from '../../styles/MenuBottom';
+import { useToast } from '../../context/ToastContext';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { logout } from '../../service/userService';
 
 interface MenuBottomProps {
@@ -14,9 +13,48 @@ interface MenuBottomProps {
 }
 
 export default function MenuBottom({ userRole }: MenuBottomProps) {
-  const [modalVisible, setModalVisible] = useState(false); // Estado para controlar a visibilidade do modal
+  const [modalVisible, setModalVisible] = useState(false);
   const navigation = useNavigation();
-  const { showToast } = useToast(); // Hook do ToastContext
+  const { showToast } = useToast();
+
+  // Estado para controlar a visibilidade do menu (true = visível, false = escondido)
+  const [menuVisible, setMenuVisible] = useState(true);
+  // Animação para a transição do menu
+  const menuTranslateY = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Listener para quando o teclado aparece
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setMenuVisible(false); // Esconde o menu
+        Animated.timing(menuTranslateY, {
+          toValue: 100, // Move o menu 100px para baixo (fora da tela)
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      }
+    );
+
+    // Listener para quando o teclado desaparece
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setMenuVisible(true); // Mostra o menu
+        Animated.timing(menuTranslateY, {
+          toValue: 0, // Retorna o menu à sua posição original
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      }
+    );
+
+    // Limpeza dos listeners ao desmontar o componente
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, [menuTranslateY]); // O dependency array garante que o efeito só rode uma vez
 
   const handleReportPress = () => {
     if (userRole !== 'admin') {
@@ -42,77 +80,71 @@ export default function MenuBottom({ userRole }: MenuBottomProps) {
     navigation.navigate('Register');
   };
 
-  // Função para lidar com o logout
   const handleLogoutPress = () => {
-    setModalVisible(true); // Exibe o modal de confirmação
+    setModalVisible(true);
   };
 
   const confirmLogout = async () => {
     try {
-      // Lógica de logout
-      await logout(); // Chamada da função de logout, sem necessidade de 'auth'
-      await AsyncStorage.removeItem('@token'); // Remove o token do AsyncStorage
-
-      console.log("token" + await AsyncStorage.getItem('@token'));
+      await logout(navigation);
       showToast({
         type: 'success',
         text1: 'Logout efetuado!',
         text2: 'Você foi desconectado com sucesso.',
       });
-      navigation.navigate('Auth'); // Redireciona para a tela de autenticação
-    } catch (error) {
+    } catch (error: any) {
       showToast({
         type: 'error',
         text1: 'Erro ao fazer logout!',
-        text2: error.message,
+        text2: error.message || 'Ocorreu um erro desconhecido.',
       });
     } finally {
-      setModalVisible(false); // Fecha o modal após a tentativa de logout
+      setModalVisible(false);
     }
   };
 
   const cancelLogout = () => {
-    setModalVisible(false); // Fecha o modal sem fazer nada
+    setModalVisible(false);
   };
 
   return (
-    <View style={container.base}>
-      {/* Botão para acessar relatórios */}
-      <TouchableOpacity style={item.base} onPress={handleReportPress}>
-        <MaterialIcons name="description" size={36} color="#fff" style={item.icon} />
-        <Text style={item.label}>Relatórios</Text>
-      </TouchableOpacity>
+    // Usa Animated.View para aplicar a animação de translateY
+    <Animated.View style={[container.base, { transform: [{ translateY: menuTranslateY }] }]}>
+      {/* O menu inteiro é ocultado quando o teclado está ativo */}
+      {menuVisible && (
+        <>
+          <TouchableOpacity style={item.base} onPress={handleReportPress}>
+            <MaterialIcons name="description" size={36} color="#fff" style={item.icon} />
+            <Text style={item.label}>Relatórios</Text>
+          </TouchableOpacity>
 
-      {/* Botão para registrar um novo item */}
-      <View style={register.wrapper}>
-        <TouchableOpacity style={register.button} onPress={handleRegisterPress}>
-          <LinearGradient
-            colors={['#F0C420', '#0A8042']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={register.gradient}
+          <View style={register.wrapper}>
+            <TouchableOpacity style={register.button} onPress={handleRegisterPress}>
+              <LinearGradient
+                colors={['#F0C420', '#0A8042']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={register.gradient}
+              >
+                <Ionicons name="add" size={32} color="#fff" />
+              </LinearGradient>
+            </TouchableOpacity>
+            <Text style={item.label}>Registrar</Text>
+          </View>
+
+          <TouchableOpacity style={item.base} onPress={handleTrackingPress}>
+            <MaterialIcons name="track-changes" size={36} color="#fff" style={item.icon} />
+            <Text style={item.label}>Rastreamento</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={logoutStyles.button}
+            onPress={handleLogoutPress}
           >
-            <Ionicons name="add" size={32} color="#fff" />
-          </LinearGradient>
-        </TouchableOpacity>
-        <Text style={item.label}>Registrar</Text>
-      </View>
-
-      {/* Botão para rastreamento */}
-      <TouchableOpacity style={item.base} onPress={handleTrackingPress}>
-        <MaterialIcons name="track-changes" size={36} color="#fff" style={item.icon} />
-        <Text style={item.label}>Rastreamento</Text>
-      </TouchableOpacity>
-
-      {/* Botão de Logout - Posicionado no canto superior direito e vermelho */}
-      <TouchableOpacity
-        style={styles.logoutButton}
-        onPress={handleLogoutPress}
-        alignItems="center"
-      >
-        <Feather name="log-out" size={25} color="#fff" />
-        <Text style={{ color: '#fff', marginLeft: 10, fontSize: 20 }}>Sair</Text>
-      </TouchableOpacity>
+            <Feather name="log-out" size={24} color="#fff" />
+          </TouchableOpacity>
+        </>
+      )}
 
       {/* Modal de confirmação de logout */}
       <Modal
@@ -121,37 +153,20 @@ export default function MenuBottom({ userRole }: MenuBottomProps) {
         visible={modalVisible}
         onRequestClose={cancelLogout}
       >
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-          <View style={{ width: 300, padding: 20, backgroundColor: '#fff', borderRadius: 10 }}>
-            <Text style={{ fontSize: 18, marginBottom: 20 }}>Tem certeza que deseja sair?</Text>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <TouchableOpacity onPress={confirmLogout} style={{ padding: 10, backgroundColor: '#0A8042', borderRadius: 5 }}>
-                <Text style={{ color: '#fff' }}>Sim</Text>
+        <View style={modalStyles.overlay}>
+          <View style={modalStyles.container}>
+            <Text style={modalStyles.title}>Tem certeza que deseja sair?</Text>
+            <View style={modalStyles.buttons}>
+              <TouchableOpacity onPress={confirmLogout} style={modalStyles.confirmButton}>
+                <Text style={modalStyles.confirmText}>Sim</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={cancelLogout} style={{ padding: 10, backgroundColor: '#F0C420', borderRadius: 5 }}>
-                <Text style={{ color: '#fff' }}>Cancelar</Text>
+              <TouchableOpacity onPress={cancelLogout} style={modalStyles.cancelButton}>
+                <Text style={modalStyles.cancelText}>Cancelar</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
-    </View>
+    </Animated.View>
   );
 }
-
-const styles = StyleSheet.create({
-  logoutButton: {
-    position: 'absolute',
-    top: -60,
-    right: 20,
-    backgroundColor: '#E74C3C', // Cor vermelha
-    borderRadius: 50,
-    padding: 10,
-    zIndex: 10, // Garante que o botão fique sobre os outros componentes
-    width: 150,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-});

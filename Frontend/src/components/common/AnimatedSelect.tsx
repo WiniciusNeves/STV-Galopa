@@ -1,82 +1,106 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
-  TouchableOpacity,
   Text,
+  TouchableOpacity,
   View,
-  FlatList,
   StyleSheet,
+  Easing,
 } from "react-native";
+export default function AnimatedSelect({
+  label,
+  selectedValue,
+  onValueChange,
+  options = [],
+  containerStyle,
+  selectKey,
+  openKey,
+  setOpenKey,
+}: any) {
+  const isOpen = openKey === selectKey;
+  const animation = useRef(new Animated.Value(0)).current;
 
-const AnimatedSelect = ({ options = [], selectedValue, onValueChange, placeholder }) => {
-  const [expanded, setExpanded] = useState(false);
-  const heightAnim = useRef(new Animated.Value(50)).current;
+  useEffect(() => {
+    Animated.timing(animation, {
+      toValue: isOpen ? options.length * 40 : 0,
+      duration: 200,
+      useNativeDriver: false,
+      easing: Easing.out(Easing.ease),
+    }).start();
+  }, [isOpen]);
 
   const toggleDropdown = () => {
-    setExpanded(!expanded);
-    Animated.timing(heightAnim, {
-      toValue: expanded ? 50 : 200,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-  };
-
-  const handleSelect = (item) => {
-    onValueChange(item.value);
-    toggleDropdown(); // close with animation
+    setOpenKey(isOpen ? null : selectKey);
   };
 
   return (
-    <Animated.View style={[styles.container, { height: heightAnim }]}>
-      <TouchableOpacity onPress={toggleDropdown} style={styles.button}>
-        <Text style={styles.buttonText}>
-          {options.find((opt) => opt.value === selectedValue)?.label || placeholder}
-        </Text>
+    <View style={[styles.container, containerStyle, { zIndex: isOpen ? 100 : 10 }]}>
+      <Text style={styles.label}>{label}</Text>
+      <TouchableOpacity onPress={toggleDropdown} style={styles.selector}>
+        <Text style={styles.selectorText}>{selectedValue || "Selecione..."}</Text>
       </TouchableOpacity>
-      {expanded && (
-        <FlatList
-          data={options}
-          keyExtractor={(item) => item.value}
-          renderItem={({ item }) => (
-            <TouchableOpacity style={styles.option} onPress={() => handleSelect(item)}>
-              <Text style={styles.optionText}>{item.label}</Text>
+
+      {isOpen && (
+        <Animated.View style={[styles.dropdown, { height: animation }]}>
+          {options.map((option: string) => (
+            <TouchableOpacity
+              key={option}
+              onPress={() => {
+                onValueChange(option);
+                setOpenKey(null);
+              }}
+              style={styles.option}
+            >
+              <Text style={styles.optionText}>{option}</Text>
             </TouchableOpacity>
-          )}
-          nestedScrollEnabled={true}
-        />
+          ))}
+        </Animated.View>
       )}
-    </Animated.View>
+    </View>
   );
-};
+}
+
 
 const styles = StyleSheet.create({
   container: {
-    width: '85%',
-    backgroundColor: '#003322',
-    borderRadius: 8,
-    overflow: 'hidden',
+    position: "relative",
     marginBottom: 20,
   },
-  button: {
-    height: 50,
-    justifyContent: "center",
-    paddingHorizontal: 15,
-    backgroundColor: '#004D3C',
+  label: {
+    fontSize: 14,
+    marginBottom: 4,
+    color: "#fff",
   },
-  buttonText: {
-    color: "white",
+  selector: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    borderRadius: 6,
+    backgroundColor: "transparent",
+  },
+  selectorText: {
+    color: "#fff",
+  },
+  dropdown: {
+    position: "absolute",
+    top: 60,
+    left: 0,
+    right: 0,
+    backgroundColor: "#222",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    overflow: "hidden",
+    zIndex: 99,
+    elevation: 5,
+    borderRadius: 6,
   },
   option: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    backgroundColor: '#00594C',
+    padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#007F6D',
+    borderColor: "#444",
   },
   optionText: {
-    color: "white",
+    color: "#fff",
   },
 });
-
-export default AnimatedSelect;
 

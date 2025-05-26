@@ -1,9 +1,10 @@
 import apiRouter from "./apiRouter";
-import { getValidToken as getCurrentToken } from "../service/authService"; // Importe a função para obter o token atual
+import { getAuthData } from "../service/authService"; // 🎉 MUDANÇA AQUI: IMPORTAR getAuthData 🎉
 import * as FileSystem from "expo-file-system";
-import { uploadImageAsync } from "./uploadService"; // importe a função acima
+import { uploadImageAsync } from "./uploadService";
 
 const api = apiRouter;
+
 // Definindo o tipo Checklist
 export interface Checklist {
     id?: string;
@@ -20,7 +21,10 @@ export interface Checklist {
 
 // Função auxiliar para adicionar o token ao cabeçalho da requisição
 const withAuth = async (config: any) => {
-    const token = await getCurrentToken();
+    // 🎉 MUDANÇA AQUI: CHAMAR getAuthData E PEGAR O TOKEN 🎉
+    const authData = await getAuthData();
+    const token = authData.token; // Pega o token do objeto retornado
+
     if (token) {
         config.headers = {
             ...config.headers,
@@ -87,43 +91,38 @@ export const deleteChecklist = async (id: string): Promise<boolean> => {
 
 // Função para criar um novo checklist com autenticação
 export const createChecklistWithAuth = async (
-  checklist: Checklist,
-  photos: { uri: string }[]
+    checklist: Checklist,
+    photos: { uri: string }[]
 ): Promise<Checklist | null> => {
-  try {
-    // Usa Promise.allSettled para uploads paralelos robustos
-    const uploadPromises = photos.map(photo => uploadImageAsync(photo.uri));
-    const results = await Promise.allSettled(uploadPromises);
+    try {
+        const uploadPromises = photos.map(photo => uploadImageAsync(photo.uri));
+        const results = await Promise.allSettled(uploadPromises);
 
-    // Filtra apenas as URLs de upload bem-sucedidas
-   const fotoUrls = results
-     .filter(result => result.status === 'fulfilled')
-     .map(result => result.value);
+        const fotoUrls = results
+            .filter(result => result.status === 'fulfilled')
+            .map(result => (result as PromiseFulfilledResult<string>).value); // Adicionado cast para garantir tipo
 
-    // Aviso se algumas fotos não foram enviadas
-    if (fotoUrls.length !== photos.length) {
-        console.warn("Algumas fotos não puderam ser enviadas.");
-        // Decida se deseja abortar ou continuar com as fotos disponíveis
+        if (fotoUrls.length !== photos.length) {
+            console.warn("Algumas fotos não puderam ser enviadas.");
+        }
+
+        const dataToSend = {
+            ...checklist,
+            fotos: fotoUrls,
+        };
+
+        const config = await withAuth({
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        const response = await api.post("/checklists", dataToSend, config);
+        return response.data;
+    } catch (error) {
+        console.error("Erro ao criar checklist:", error);
+        return null;
     }
-
-    const dataToSend = {
-      ...checklist,
-      // Este é o campo que seu backend deve esperar para as URLs das fotos
-      fotos: fotoUrls, 
-    };
-
-    const config = await withAuth({
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    const response = await api.post("/checklists", dataToSend, config);
-    return response.data;
-  } catch (error) {
-    console.error("Erro ao criar checklist:", error);
-    return null;
-  }
 };
 
 // Função para buscar todos os checklists com autenticação

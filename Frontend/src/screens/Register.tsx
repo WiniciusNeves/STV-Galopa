@@ -1,297 +1,310 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  View, Text, TextInput, TouchableOpacity, Image, FlatList,
-  KeyboardAvoidingView, Platform, Animated, Alert,
+    Alert,
+    Animated,
+    FlatList,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+    ActivityIndicator, // Certifique-se de que está importado
 } from "react-native";
-import * as ImagePicker from 'expo-image-picker';
-
+import * as ImagePicker from "expo-image-picker";
+import styles from "../styles/Register";
 import { createChecklistWithAuth } from "../service/checklistService";
-import colors from "../styles/Colors";
-import styles from "../styles/Register"; // Supondo que isso defina seus estilos
-import MenuBottom from "../components/common/MenuBottom";
+import AnimatedSelect from "../components/common/AnimatedSelect";
 import GradientButton from "../components/auth/GradientButton";
-import AnimatedSelect from '../components/common/AnimatedSelect'; // Supondo que este componente exista
+import { Entypo } from "@expo/vector-icons";
+import MenuBottom from "../components/common/MenuBottom";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
-export default function Register({ userRole = 'admin' }) {
-  const [selectedArea, setSelectedArea] = useState("");
-  const [selectedName, setSelectedName] = useState("");
-  const [selectedPlate, setSelectedPlate] = useState("");
-  const [km, setKm] = useState("");
-  const [fuelLevel, setFuelLevel] = useState("");
-  const [tireCondition, setTireCondition] = useState("");
-  const [hasSpareTire, setHasSpareTire] = useState(true);
-  const [description, setDescription] = useState("");
-  const [photos, setPhotos] = useState([]);
-  const translateXAnim = useRef(new Animated.Value(0)).current;
+import {
+    areaOptions,
+    nameOptions,
+    plateOptions,
+    tireConditionOptions,
+    fuelLevelOptions, // 🎉 IMPORTANTE: IMPORTE AS NOVAS OPÇÕES 🎉
+} from "../constants/selectOptions";
 
-  // Constantes para opções de seleção - movidas para dentro do componente ou para fora se forem realmente estáticas
-  const OPTIONS = {
-    PA_NAMES: [{ label: "PA 1", value: "pa1" }, { label: "PA 2", value: "pa2" }],
-    AREAS: [{ label: "Área 1", value: "area1" }, { label: "Área 2", value: "area2" }],
-    PLATES: [{ label: "ABC-1234", value: "abc1234" }, { label: "XYZ-5678", value: "xyz5678" }],
-    FUEL_LEVELS: [{ label: "Baixo", value: "baixo" }, { label: "Médio", value: "medio" }, { label: "Alto", value: "alto" }],
-    TIRE_CONDITIONS: [{ label: "Bom", value: "bom" }, { label: "Trocar", value: "trocar" }]
-  };
+export default function RegistroScreen() {
+    const translateXAnim = useRef(new Animated.Value(-1000)).current;
+    const [selectedArea, setSelectedArea] = useState("");
+    const [selectedName, setSelectedName] = useState("");
+    const [selectedPlate, setSelectedPlate] = useState("");
+    const [km, setKm] = useState("");
+    const [fuelLevel, setFuelLevel] = useState(""); // Este estado agora será para o valor do select
+    const [tireCondition, setTireCondition] = useState("");
+    const [hasSpareTire, setHasSpareTire] = useState(true);
+    const [description, setDescription] = useState("");
+    const [photos, setPhotos] = useState([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [userRole, setUserRole] = useState("");
+    const [openSelectKey, setOpenSelectKey] = useState<string | null>(null);
 
-  useEffect(() => {
-    Animated.spring(translateXAnim, {
-      toValue: hasSpareTire ? 0 : 130,
-      stiffness: 1000,
-      damping: 500,
-      mass: 3,
-      overshootClamping: true,
-      restDisplacementThreshold: 0.01,
-      restSpeedThreshold: 0.01,
-      useNativeDriver: true,
-    }).start();
-  }, [hasSpareTire, translateXAnim]); // Adicionado translateXAnim ao array de dependências
+    useEffect(() => {
+        Animated.timing(translateXAnim, {
+            toValue: 0,
+            duration: 700,
+            useNativeDriver: true,
+        }).start();
+    }, []);
 
-  // Função unificada para solicitar permissão e escolher imagem
-  const requestPermissionAndPickImage = useCallback(async (source) => {
-    let permission;
-    if (source === 'camera') {
-      permission = await ImagePicker.requestCameraPermissionsAsync();
-    } else {
-      permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    }
+    useEffect(() => {
+        const fetchRole = async () => {
+            const storedRole = await AsyncStorage.getItem("@userRole");
+            setUserRole(storedRole || "user");
+        };
+        fetchRole();
+    }, []);
 
-    if (permission.status !== 'granted') {
-      Alert.alert('Permissão Negada', 'Você precisa conceder permissão para acessar a ' + (source === 'camera' ? 'câmera' : 'galeria') + '.');
-      return;
-    }
+    const handleSelectGallery = async () => {
+        if (isSubmitting) return;
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permissão Negada', 'Você precisa conceder permissão para acessar a galeria.');
+            return;
+        }
 
-    let result;
-    if (source === 'camera') {
-      result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8
-      });
-    } else {
-      result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsMultipleSelection: true,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8
-      });
-    }
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsMultipleSelection: true,
+            quality: 1,
+            aspect: [4, 3],
+        });
 
-    if (!result.canceled && result.assets) {
-      setPhotos(prevPhotos => [...prevPhotos, ...result.assets]);
-    }
-  }, []);
-
-  const takePhoto = () => requestPermissionAndPickImage('camera');
-  const chooseFromGallery = () => requestPermissionAndPickImage('gallery');
-
-
-  const handleSave = async () => {
-    if (!selectedArea || !selectedName || !selectedPlate || !km || !fuelLevel || !tireCondition) {
-      return Alert.alert("Erro", "Por favor, preencha todos os campos obrigatórios.");
-    }
-
-    // Validação básica para KM
-    if (isNaN(parseInt(km)) || parseInt(km) <= 0) {
-        return Alert.alert("Erro", "Quilometragem deve ser um número válido e maior que zero.");
-    }
-
-    const checklistData = {
-      area: selectedArea,
-      nome: selectedName,
-      placa: selectedPlate,
-      quilometragem: parseInt(km),
-      nivelCombustivel: fuelLevel,
-      pneus: tireCondition === "Bom", // Assumindo que "Bom" significa true
-      temEstepe: hasSpareTire,
-      descricao: description,
+        if (!result.canceled && result.assets) {
+            const selectedPhotos = result.assets.map((asset) => asset.uri);
+            setPhotos((prev) => [...prev, ...selectedPhotos]);
+        }
     };
 
-    try {
-      const result = await createChecklistWithAuth(checklistData, photos);
+    const handleTakePhoto = async () => {
+        if (isSubmitting) return;
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permissão Negada', 'Você precisa conceder permissão para acessar a câmera.');
+            return;
+        }
 
-      if (result) {
-        Alert.alert("Sucesso", "Checklist enviado com sucesso!");
-        // Limpa todos os campos em caso de sucesso
-        setSelectedArea("");
-        setSelectedName("");
-        setSelectedPlate("");
-        setKm("");
-        setFuelLevel("");
-        setTireCondition("");
-        setHasSpareTire(true);
-        setDescription("");
-        setPhotos([]);
-      } else {
-        // Erro já logado em createChecklistWithAuth
-        Alert.alert("Erro", "Falha ao enviar o checklist. Tente novamente.");
-      }
-    } catch (error) {
-      console.error("Erro inesperado ao salvar checklist no frontend:", error);
-      Alert.alert("Erro", "Ocorreu um erro inesperado ao salvar o checklist.");
-    }
-  };
+        const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            quality: 1,
+            aspect: [4, 3],
+        });
 
-  // renderPhotoItem memoizado para performance
-  const renderPhotoItem = useCallback(({ item }) => (
-    <Image
-      source={{ uri: item.uri }}
-      style={{ width: 100, height: 100, marginRight: 10, borderRadius: 5 }}
-    />
-  ), []); // Sem dependências, então só renderiza novamente se as props mudarem
+        if (!result.canceled && result.assets) {
+            const photo = result.assets[0].uri;
+            setPhotos((prev) => [...prev, photo]);
+        }
+    };
 
-  // Renderização do formulário separada em uma função distinta para clareza
-  const renderForm = () => (
-    <View style={{ flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'flex-start', paddingBottom: 80 }}>
-      {/* Imagens de fundo */}
-      <Image source={require('../assets/img/Cubes.png')} style={{ position: 'absolute', top: 0, width: '100%', height: '100%', zIndex: -1 }} />
-      <Image source={require('../assets/img/logo.png')} style={{ width: "100%", height: 160, position: "relative", top: 0 }} />
+    const handleSave = async () => {
+        if (isSubmitting) {
+            console.log("Submissão já em andamento, ignorando clique.");
+            return;
+        }
 
-      {/* Campos do Formulário */}
-      <Text style={styles.label}>Área</Text>
-      <AnimatedSelect
-        placeholder={"Selecione uma Área"}
-        label="Área"
-        options={OPTIONS.AREAS}
-        selectedValue={selectedArea}
-        onValueChange={setSelectedArea}
-      />
+        const requiredFields = {
+            "Área": selectedArea,
+            "Nome do PA": selectedName,
+            "Placa do Carro": selectedPlate,
+            "KM Atual": km,
+            "Nível de Combustível": fuelLevel, // Agora valida o valor do select
+            "Estado dos Pneus": tireCondition,
+        };
 
-      <Text style={styles.label}>Nomes dos PA</Text>
-      <AnimatedSelect
-        placeholder={"Selecione um PA"}
-        label="Nomes dos PA"
-        options={OPTIONS.PA_NAMES}
-        selectedValue={selectedName}
-        onValueChange={setSelectedName}
-      />
+        let missingFields = [];
+        for (const [label, value] of Object.entries(requiredFields)) {
+            if (!value || (typeof value === 'string' && value.trim() === '')) {
+                missingFields.push(label);
+            }
+        }
 
-      <Text style={styles.label}>Placas dos Carros</Text>
-      <AnimatedSelect
-        placeholder={"Selecione uma Placa"}
-        label="Placas dos Carros"
-        options={OPTIONS.PLATES}
-        selectedValue={selectedPlate}
-        onValueChange={setSelectedPlate}
-      />
+        if (missingFields.length > 0) {
+            return Alert.alert(
+                "Campos Obrigatórios",
+                `Por favor, preencha os seguintes campos: \n${missingFields.join('\n')}`
+            );
+        }
 
-      <Text style={styles.label}>KM Atual</Text>
-      <TextInput
-        style={styles.input}
-        value={km}
-        onChangeText={(text) => setKm(text.replace(/[^0-9]/g, ''))} // Garante apenas números
-        placeholder="Digite a quilometragem"
-        placeholderTextColor={colors.placeholder}
-        keyboardType="numeric"
-      />
+        if (isNaN(parseInt(km)) || parseInt(km) <= 0) {
+            return Alert.alert("Erro", "Quilometragem deve ser um número válido e maior que zero.");
+        }
 
-      <Text style={styles.label}>Nível de Combustível</Text>
-      <AnimatedSelect
-        placeholder={"Selecione o nível de combustível"}
-        label="Nível de Combustível"
-        options={OPTIONS.FUEL_LEVELS}
-        selectedValue={fuelLevel}
-        onValueChange={setFuelLevel}
-      />
+        setIsSubmitting(true);
 
-      <Text style={styles.label}>Estado dos Pneus</Text>
-      <AnimatedSelect
-        placeholder={"Selecione o estado dos pneus"}
-        label="Estado dos Pneus"
-        options={OPTIONS.TIRE_CONDITIONS}
-        selectedValue={tireCondition}
-        onValueChange={setTireCondition}
-      />
+        const checklistData = {
+            area: selectedArea,
+            nome: selectedName,
+            placa: selectedPlate,
+            quilometragem: parseInt(km),
+            nivelCombustivel: fuelLevel, // Envia o valor do select
+            pneus: tireCondition === "Bom",
+            temEstepe: hasSpareTire,
+            descricao: description,
+        };
 
-      <Text style={[styles.label, { color: 'white', alignSelf: 'flex-start' }]}>
-        Viatura tem estepe?
-      </Text>
-      <View style={{
-        flexDirection: 'row',
-        borderRadius: 10,
-        backgroundColor: colors.darkCard,
-        overflow: 'hidden',
-        position: 'relative',
-        width: 250,
-        height: 45,
-        marginBottom: 20,
-      }}>
-        <Animated.View
-          style={{
-            position: 'absolute',
-            width: '50%',
-            height: '100%',
-            backgroundColor: colors.primary,
-            borderRadius: 10,
-            transform: [{ translateX: translateXAnim }],
-          }}
-        />
-        <TouchableOpacity
-          onPress={() => setHasSpareTire(true)}
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center', zIndex: 1 }}
-        >
-          <Text style={{ color: hasSpareTire === true ? 'white' : 'gray' }}>Sim</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setHasSpareTire(false)}
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center', zIndex: 1 }}
-        >
-          <Text style={{ color: hasSpareTire === false ? 'white' : 'gray' }}>Não</Text>
-        </TouchableOpacity>
-      </View>
+        try {
+            const formattedPhotos = photos.map(uri => ({ uri }));
+            const result = await createChecklistWithAuth(checklistData, formattedPhotos);
 
-      <Text style={styles.label}>Descrição / Observação</Text>
-      <TextInput
-        style={[styles.input, { height: 100, textAlignVertical: 'top', marginBottom: 10 }]}
-        value={description}
-        onChangeText={setDescription}
-        multiline
-        placeholder="Digite aqui sua observação"
-        placeholderTextColor="gray"
-      />
+            if (result) {
+                Alert.alert("Sucesso", "Checklist enviado com sucesso!");
+                setSelectedArea("");
+                setSelectedName("");
+                setSelectedPlate("");
+                setKm("");
+                setFuelLevel(""); // Limpa o estado
+                setTireCondition("");
+                setHasSpareTire(true);
+                setDescription("");
+                setPhotos([]);
+            } else {
+                Alert.alert("Erro", "Falha ao enviar o checklist. Tente novamente.");
+            }
+        } catch (error) {
+            console.error("Erro inesperado ao salvar checklist no frontend:", error);
+            Alert.alert("Erro", "Ocorreu um erro inesperado ao salvar o checklist.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
-      {/* Botões de Upload de Fotos e Exibição */}
-      <View style={{ flexDirection: 'column', justifyContent: 'flex-start', alignItems: 'center', width: '80%', marginBottom: 20 }}>
-        <TouchableOpacity style={[styles.button, { backgroundColor: '#F8A500' }]} onPress={takePhoto}>
-          <Text style={styles.buttonText}>Usar Câmera</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, { backgroundColor: '#007AFF', marginTop: 10 }]} onPress={chooseFromGallery}>
-          <Text style={styles.buttonText}>Escolher da Galeria</Text>
-        </TouchableOpacity>
+    return (
+        <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+            <Image source={require("../assets/img/Cubes.png")} style={styles.backgroundImage} />
+            <Image source={require("../assets/img/logo.png")} style={styles.logo} />
 
-        {photos.length > 0 && (
-          <View style={{ width: '100%', alignItems: 'center', marginTop: 20 }}>
-            <Text style={styles.label}>Fotos Adicionadas</Text>
-            <FlatList
-              data={photos}
-              horizontal
-              // Usa 'uri' como chave se for único, ou adicione um ID único
-              keyExtractor={(item) => item.uri} 
-              renderItem={renderPhotoItem}
-              showsHorizontalScrollIndicator={false}
-            />
-          </View>
-        )}
-      </View>
+            <KeyboardAwareScrollView
+                contentContainerStyle={styles.scrollContent}
+                enableOnAndroid
+                keyboardShouldPersistTaps="handled"
+            >
+                <Animated.View style={[styles.formContainer, { transform: [{ translateX: translateXAnim }] }]}>
+                    <View style={styles.row}>
+                        <AnimatedSelect
+                            label="Área"
+                            selectedValue={selectedArea}
+                            onValueChange={setSelectedArea}
+                            options={areaOptions}
+                            containerStyle={styles.flexItem}
+                            selectKey="area"
+                            openKey={openSelectKey}
+                            setOpenKey={setOpenSelectKey}
+                            disabled={isSubmitting}
+                        />
 
-      <GradientButton text="Confirmar envio" onPress={handleSave} style={{ marginTop: 20 }} />
-    </View>
-  );
+                        <AnimatedSelect
+                            label="Nome"
+                            selectedValue={selectedName}
+                            onValueChange={setSelectedName}
+                            options={nameOptions}
+                            containerStyle={styles.flexItem}
+                            selectKey="nome"
+                            openKey={openSelectKey}
+                            setOpenKey={setOpenSelectKey}
+                            disabled={isSubmitting}
+                        />
 
-  return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: colors.background }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
-    >
-      <FlatList
-        data={[{ key: 'form' }]}
-        renderItem={renderForm} // Renderiza o formulário
-        keyExtractor={(item) => item.key}
-        ListFooterComponent={<View style={{ height: 100 }} />} // Adiciona um preenchimento na parte inferior para o teclado
-      />
-      <MenuBottom userRole={userRole} />
-    </KeyboardAvoidingView>
-  );
+                        <AnimatedSelect
+                            label="Placa"
+                            selectedValue={selectedPlate}
+                            onValueChange={setSelectedPlate}
+                            options={plateOptions}
+                            containerStyle={styles.flexItem}
+                            selectKey="placa"
+                            openKey={openSelectKey}
+                            setOpenKey={setOpenSelectKey}
+                            disabled={isSubmitting}
+                        />
+                    </View>
+
+                    <TextInput
+                        style={[styles.input, { color: "#fff" }]}
+                        placeholder="Quilometragem"
+                        placeholderTextColor="#ccc"
+                        keyboardType="numeric"
+                        value={km}
+                        onChangeText={setKm}
+                        editable={!isSubmitting}
+                    />
+
+                    {/* 🎉 AQUI ESTÁ A MUDANÇA PARA AnimatedSelect PARA NÍVEL DE COMBUSTÍVEL 🎉 */}
+                    <AnimatedSelect
+                        label="Nível de Combustível"
+                        selectedValue={fuelLevel}
+                        onValueChange={setFuelLevel}
+                        options={fuelLevelOptions} // Usando as novas opções
+                        containerStyle={styles.fullWidthItem} // Use um estilo que ocupe a largura total, se necessário
+                        selectKey="fuelLevel"
+                        openKey={openSelectKey}
+                        setOpenKey={setOpenSelectKey}
+                        disabled={isSubmitting}
+                    />
+
+                    <View style={styles.row}>
+                        <TouchableOpacity onPress={() => setHasSpareTire(!hasSpareTire)} style={[styles.checkboxContainer, styles.flexItem]} disabled={isSubmitting}>
+                            <Entypo name={hasSpareTire ? "check" : "circle"} size={24} color={hasSpareTire ? "green" : "gray"} />
+                            <Text style={styles.checkboxLabel}>Tem estepe</Text>
+                        </TouchableOpacity>
+                        <AnimatedSelect
+                            label="Estado dos pneus"
+                            selectedValue={tireCondition}
+                            onValueChange={setTireCondition}
+                            options={tireConditionOptions}
+                            containerStyle={styles.flexItem}
+                            selectKey="tireCondition"
+                            openKey={openSelectKey}
+                            setOpenKey={setOpenSelectKey}
+                            disabled={isSubmitting}
+                        />
+                    </View>
+                    <TextInput
+                        style={[styles.input, { height: 100, color: "#fff", textAlignVertical: "top" }]}
+                        placeholder="Observações"
+                        placeholderTextColor="#ccc"
+                        multiline
+                        value={description}
+                        onChangeText={setDescription}
+                        editable={!isSubmitting}
+                    />
+                    <View style={styles.buttonRow}>
+                        <TouchableOpacity onPress={handleSelectGallery} style={styles.photoButton} disabled={isSubmitting}>
+                            <Text style={styles.photoButtonText}>Galeria</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleTakePhoto} style={styles.photoButton} disabled={isSubmitting}>
+                            <Text style={styles.photoButtonText}>Câmera</Text>
+                        </TouchableOpacity>
+                    </View>
+                    {photos.length > 0 && (
+                        <FlatList
+                            data={photos}
+                            horizontal
+                            keyExtractor={(item, index) => item + index}
+                            renderItem={({ item }) => (
+                                <View style={styles.photoPreview}>
+                                    <Image source={{ uri: item }} style={styles.photoImage} />
+                                </View>
+                            )}
+                            style={styles.photoList}
+                        />
+                    )}
+                    <GradientButton
+                        text={isSubmitting ? "Enviando..." : "Confirmar envio"}
+                        onPress={handleSave}
+                        disabled={isSubmitting}
+                        style={{ marginHorizontal: 35, opacity: isSubmitting ? 0.7 : 1 }}
+                    >
+                        {isSubmitting && <ActivityIndicator size="small" color="#fff" style={{ marginLeft: 10 }} />}
+                    </GradientButton>
+                </Animated.View>
+            </KeyboardAwareScrollView>
+
+            <MenuBottom userRole={userRole} />
+        </KeyboardAvoidingView>
+    );
 }
