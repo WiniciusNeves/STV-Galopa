@@ -1,9 +1,12 @@
 {
   "expo": {
-    "name": "Frontend",
-    "slug": "Frontend",
+    "name": "STVGalope",
+    "slug": "stvgalope",
     "extra": {
-      "API_URL": "test"
+      "API_URL": "test",
+      "eas": {
+        "projectId": "82793820-3777-4638-a49c-fb1673fa2684"
+      }
     },
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,17 +19,23 @@
       "backgroundColor": "#001C12"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.stvgalope.app"
     },
     "android": {
-      "windowSoftInputMode": "adjustPan",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon_background.png",
         "backgroundColor": "#001C12"
-      }
+      },
+      "package": "com.stvgalope.app",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/icon_fo.png"
-    }
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "owner": "wneves"
   }
 }

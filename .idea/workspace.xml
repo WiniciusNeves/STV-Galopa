@@ -5,27 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2d3f29c7-b421-40d3-a296-43494a906aa6" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Frontend/@env" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/@env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Frontend/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/App.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Frontend/AppNavigator.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/AppNavigator.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Frontend/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/app.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/components/auth/GradientButton.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/components/auth/GradientButton.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/components/auth/RememberSwitch.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/components/auth/RememberSwitch.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/components/common/AnimatedSelect.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/components/common/AnimatedSelect.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Frontend/src/components/common/MenuBottom.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/components/common/MenuBottom.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Frontend/src/screens/Auth.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/screens/Auth.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Frontend/src/screens/Register.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/screens/Register.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/screens/ReportListScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/screens/ReportListScreen.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/service/apiRouter.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/service/checklistService.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/service/firebaseConfig.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/service/userService.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/utils/validators.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/functions/src/controllers/checklistController.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/functions/src/controllers/checklistController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/functions/src/controllers/userController.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/functions/src/controllers/userController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/functions/src/middlewares/authMiddleware.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/functions/src/middlewares/authMiddleware.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/functions/src/router/checklistRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/backend/functions/src/router/checklistRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/service/apiRouter.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/service/apiRouter.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/service/authService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/service/authService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/service/checklistService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/service/checklistService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/service/userService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/service/userService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/styles/MenuBottom.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/styles/MenuBottom.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/src/styles/Register.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/styles/Register.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

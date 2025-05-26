@@ -7,18 +7,31 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import colors from './src/styles/Colors';
-import { checkAutoLogin } from './src/service/authService'; // Importe a função de login automático
+import { useAuth } from './src/context/AuthContext';
 
-export default function LoadingScreen() {
+export default function App() {  // <- ALTERADO de LoadingScreen para App
     const navigation = useNavigation<any>();
+    const { user, userRole, isLoadingAuth } = useAuth();
 
     useEffect(() => {
-        const performAutoLogin = async () => {
-            await checkAutoLogin(navigation);
-        };
+        console.log('App - useEffect disparado');
+        console.log('App - user:', user);
+        console.log('App - userRole:', userRole);
+        console.log('App - isLoadingAuth:', isLoadingAuth);
 
-        performAutoLogin();
-    }, [navigation]);
+        if (!isLoadingAuth) {
+            if (userRole === 'admin') {
+                console.log('App - Navegando para ReportListScreen (Admin)');
+                navigation.replace('ReportListScreen');
+            } else if (userRole === 'user') {
+                console.log('App - Navegando para ChecklistScreen (User)');
+                navigation.replace('ChecklistScreen');
+            } else {
+                console.log('App - Navegando para Auth');
+                navigation.replace('Auth');
+            }
+        }
+    }, [user, userRole, isLoadingAuth, navigation]);
 
     return (
         <View style={styles.container}>
