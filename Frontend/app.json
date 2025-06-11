@@ -8,7 +8,7 @@
         "projectId": "82793820-3777-4638-a49c-fb1673fa2684"
       }
     },
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -24,18 +24,20 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon_background.png",
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#001C12"
       },
       "package": "com.stvgalope.app",
       "versionCode": 1
     },
     "web": {
-      "favicon": "./assets/icon_fo.png"
+      "favicon": "./assets/favicon.png"
     },
     "assetBundlePatterns": [
-      "**/*"
+      "assets/*"
     ],
-    "owner": "wneves"
+    "owner": "wneves",
+    "iosStatusBarStyle": "light-content"
   }
 }
+

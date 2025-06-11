@@ -1,0 +1,22 @@
+# Ignorar node_modules (já é tratado automaticamente, mas por precaução)
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Configs locais
+.env
+.env.local
+*.keystore
+
+# Diretórios desnecessários para build
+.git
+.idea
+.vscode
+.DS_Store
+android/app/build
+ios/build
+web-build
+
+# Pastas temporárias
+.expo
+.expo-shared

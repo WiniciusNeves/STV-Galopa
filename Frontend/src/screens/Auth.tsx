@@ -70,7 +70,7 @@ export default function LoginScreen() {
                     />
 
                     <Image
-                        source={require('../assets/img/logo.png')}
+                        source={require('../assets/img/logoAuth.png')}
                         style={s.imageStyle.base}
                     />
 

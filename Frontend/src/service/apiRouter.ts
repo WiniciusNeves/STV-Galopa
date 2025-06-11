@@ -22,7 +22,7 @@ apiRouter.interceptors.request.use(
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('[API Router] Token enviado:', token);
+      console.info('[API Router] Token enviado:', token);
     } else {
       console.warn('[API Router] Token não disponível.');
     }

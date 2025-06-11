@@ -15,8 +15,6 @@ export default StyleSheet.create({
   },
   logo: {
     width: "100%",
-    height: 160,
-  
     marginBottom: 10,
   },
   scrollContent: {
@@ -92,4 +90,5 @@ export default StyleSheet.create({
    
     alignItems: "center",
   },
+  
 });

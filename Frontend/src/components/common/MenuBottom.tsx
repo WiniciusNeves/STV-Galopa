@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, TouchableOpacity, Text, Modal, Keyboard, Animated, StyleSheet } from 'react-native';
-import { MaterialIcons, Feather, Ionicons } from '@expo/vector-icons';
+import { View, TouchableOpacity, Text, Modal, Keyboard, Animated } from 'react-native';
+import { MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import colors from '../../styles/Colors'; // Certifique-se que o caminho está correto
-import { container, item, register, logout as logoutStyles, modal as modalStyles } from '../../styles/MenuBottom';
+import { useNavigation, useRoute } from '@react-navigation/native';
+
+import colors from '../../styles/Colors';
+import { container, item, register } from '../../styles/MenuBottom';
 import { useToast } from '../../context/ToastContext';
-import { useNavigation } from '@react-navigation/native';
-import { logout } from '../../service/userService';
 
 interface MenuBottomProps {
   userRole: string;
@@ -15,46 +15,36 @@ interface MenuBottomProps {
 export default function MenuBottom({ userRole }: MenuBottomProps) {
   const [modalVisible, setModalVisible] = useState(false);
   const navigation = useNavigation();
+  const route = useRoute(); // ⬅️ Pegando a rota atual
   const { showToast } = useToast();
 
-  // Estado para controlar a visibilidade do menu (true = visível, false = escondido)
   const [menuVisible, setMenuVisible] = useState(true);
-  // Animação para a transição do menu
   const menuTranslateY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Listener para quando o teclado aparece
-    const keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      () => {
-        setMenuVisible(false); // Esconde o menu
-        Animated.timing(menuTranslateY, {
-          toValue: 100, // Move o menu 100px para baixo (fora da tela)
-          duration: 200,
-          useNativeDriver: true,
-        }).start();
-      }
-    );
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setMenuVisible(false);
+      Animated.timing(menuTranslateY, {
+        toValue: 100,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    });
 
-    // Listener para quando o teclado desaparece
-    const keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      () => {
-        setMenuVisible(true); // Mostra o menu
-        Animated.timing(menuTranslateY, {
-          toValue: 0, // Retorna o menu à sua posição original
-          duration: 200,
-          useNativeDriver: true,
-        }).start();
-      }
-    );
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setMenuVisible(true);
+      Animated.timing(menuTranslateY, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    });
 
-    // Limpeza dos listeners ao desmontar o componente
     return () => {
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
     };
-  }, [menuTranslateY]); // O dependency array garante que o efeito só rode uma vez
+  }, [menuTranslateY]);
 
   const handleReportPress = () => {
     if (userRole !== 'admin') {
@@ -80,42 +70,22 @@ export default function MenuBottom({ userRole }: MenuBottomProps) {
     navigation.navigate('Register');
   };
 
-  const handleLogoutPress = () => {
-    setModalVisible(true);
-  };
-
-  const confirmLogout = async () => {
-    try {
-      await logout(navigation);
-      showToast({
-        type: 'success',
-        text1: 'Logout efetuado!',
-        text2: 'Você foi desconectado com sucesso.',
-      });
-    } catch (error: any) {
-      showToast({
-        type: 'error',
-        text1: 'Erro ao fazer logout!',
-        text2: error.message || 'Ocorreu um erro desconhecido.',
-      });
-    } finally {
-      setModalVisible(false);
-    }
-  };
-
-  const cancelLogout = () => {
-    setModalVisible(false);
-  };
+  const isActive = (routeName: string) => route.name === routeName;
 
   return (
-    // Usa Animated.View para aplicar a animação de translateY
     <Animated.View style={[container.base, { transform: [{ translateY: menuTranslateY }] }]}>
-      {/* O menu inteiro é ocultado quando o teclado está ativo */}
       {menuVisible && (
         <>
           <TouchableOpacity style={item.base} onPress={handleReportPress}>
-            <MaterialIcons name="description" size={36} color="#fff" style={item.icon} />
-            <Text style={item.label}>Relatórios</Text>
+            <MaterialIcons
+              name="description"
+              size={36}
+              color={isActive('ReportListScreen') ? '#F0C420' : '#fff'}
+              style={item.icon}
+            />
+            <Text style={[item.label, isActive('ReportListScreen') && { color: '#F0C420' }]}>
+              Relatórios
+            </Text>
           </TouchableOpacity>
 
           <View style={register.wrapper}>
@@ -126,47 +96,31 @@ export default function MenuBottom({ userRole }: MenuBottomProps) {
                 end={{ x: 1, y: 0 }}
                 style={register.gradient}
               >
-                <Ionicons name="add" size={32} color="#fff" />
+                <Ionicons
+                  name="add"
+                  size={32}
+                  color={isActive('Register') ? '#F0C420' : '#fff'}
+                />
               </LinearGradient>
             </TouchableOpacity>
-            <Text style={item.label}>Registrar</Text>
+            <Text style={[item.label, isActive('Register') && { color: '#F0C420' }]}>
+              Registrar
+            </Text>
           </View>
 
           <TouchableOpacity style={item.base} onPress={handleTrackingPress}>
-            <MaterialIcons name="track-changes" size={36} color="#fff" style={item.icon} />
-            <Text style={item.label}>Rastreamento</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={logoutStyles.button}
-            onPress={handleLogoutPress}
-          >
-            <Feather name="log-out" size={24} color="#fff" />
+            <MaterialIcons
+              name="track-changes"
+              size={36}
+              color={isActive('TrackingScreen') ? '#F0C420' : '#fff'}
+              style={item.icon}
+            />
+            <Text style={[item.label, isActive('TrackingScreen') && { color: '#F0C420' }]}>
+              Rastreamento
+            </Text>
           </TouchableOpacity>
         </>
       )}
-
-      {/* Modal de confirmação de logout */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={cancelLogout}
-      >
-        <View style={modalStyles.overlay}>
-          <View style={modalStyles.container}>
-            <Text style={modalStyles.title}>Tem certeza que deseja sair?</Text>
-            <View style={modalStyles.buttons}>
-              <TouchableOpacity onPress={confirmLogout} style={modalStyles.confirmButton}>
-                <Text style={modalStyles.confirmText}>Sim</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={cancelLogout} style={modalStyles.cancelButton}>
-                <Text style={modalStyles.cancelText}>Cancelar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </Animated.View>
   );
 }

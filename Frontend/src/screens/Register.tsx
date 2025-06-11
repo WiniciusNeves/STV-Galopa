@@ -29,6 +29,7 @@ import {
     tireConditionOptions,
     fuelLevelOptions, // 🎉 IMPORTANTE: IMPORTE AS NOVAS OPÇÕES 🎉
 } from "../constants/selectOptions";
+import Logout from "../components/common/Logout";
 
 export default function RegistroScreen() {
     const translateXAnim = useRef(new Animated.Value(-1000)).current;
@@ -40,7 +41,7 @@ export default function RegistroScreen() {
     const [tireCondition, setTireCondition] = useState("");
     const [hasSpareTire, setHasSpareTire] = useState(true);
     const [description, setDescription] = useState("");
-    const [photos, setPhotos] = useState([]);
+    const [photos, setPhotos] = useState<string[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [userRole, setUserRole] = useState("");
     const [openSelectKey, setOpenSelectKey] = useState<string | null>(null);
@@ -146,6 +147,7 @@ export default function RegistroScreen() {
             pneus: tireCondition === "Bom",
             temEstepe: hasSpareTire,
             descricao: description,
+            fotoUrls: photos, // Adiciona fotoUrls conforme exigido pela interface Checklist
         };
 
         try {
@@ -177,7 +179,10 @@ export default function RegistroScreen() {
     return (
         <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
             <Image source={require("../assets/img/Cubes.png")} style={styles.backgroundImage} />
-            <Image source={require("../assets/img/logo.png")} style={styles.logo} />
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Image source={require("../assets/img/logo.png")} style={styles.logo} />
+                <Logout />
+            </View>
 
             <KeyboardAwareScrollView
                 contentContainerStyle={styles.scrollContent}
@@ -239,7 +244,7 @@ export default function RegistroScreen() {
                         selectedValue={fuelLevel}
                         onValueChange={setFuelLevel}
                         options={fuelLevelOptions} // Usando as novas opções
-                        containerStyle={styles.fullWidthItem} // Use um estilo que ocupe a largura total, se necessário
+                        containerStyle={styles.flexItem} // Use um estilo existente ou defina fullWidthItem em seu styles
                         selectKey="fuelLevel"
                         openKey={openSelectKey}
                         setOpenKey={setOpenSelectKey}
@@ -296,11 +301,10 @@ export default function RegistroScreen() {
                     <GradientButton
                         text={isSubmitting ? "Enviando..." : "Confirmar envio"}
                         onPress={handleSave}
-                        disabled={isSubmitting}
-                        style={{ marginHorizontal: 35, opacity: isSubmitting ? 0.7 : 1 }}
-                    >
-                        {isSubmitting && <ActivityIndicator size="small" color="#fff" style={{ marginLeft: 10 }} />}
-                    </GradientButton>
+
+                        style={{ marginHorizontal: 35, opacity: isSubmitting ? 0.7 : 1, marginTop: 20, }}
+                        gradientStyle={{ height: 60, alignItems: "center", justifyContent: "center", }}
+                    />
                 </Animated.View>
             </KeyboardAwareScrollView>
 

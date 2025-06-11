@@ -1,9 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAuth } from 'firebase/auth';
-import app from './firebaseConfig';
+import { app } from './firebaseConfig';
 import { Alert } from 'react-native';
 
 const auth = getAuth(app);
+
 
 // Definindo chaves constantes para o AsyncStorage
 const ASYNC_STORAGE_ROLE_KEY = '@userRole'; // Chave consistente com AuthContext
@@ -75,3 +76,4 @@ export const logout = async (navigation: any): Promise<void> => {
         throw error; // Propagar erro
     }
 };
+

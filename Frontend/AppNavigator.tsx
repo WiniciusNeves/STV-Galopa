@@ -15,15 +15,16 @@ import App from './App';
 import Auth from './src/screens/Auth';
 import Register from './src/screens/Register';
 import ReportListScreen from './src/screens/ReportListScreen';
+import ReportDetailScreen from './src/screens/ReportDetailScreen';
 
-// ⬅️ Adicione isso
+
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const Stack = createStackNavigator();
 
 export default function AppNavigator() {
   return (
-    <SafeAreaProvider> {/* ✅ Adicionado aqui */}
+    <SafeAreaProvider> 
       <AuthProvider>
         <ToastProvider>
           <NavigationContainer>
@@ -32,6 +33,7 @@ export default function AppNavigator() {
               <Stack.Screen name="Auth" component={Auth} />
               <Stack.Screen name="Register" component={Register} />
               <Stack.Screen name="ReportListScreen" component={ReportListScreen} />
+              <Stack.Screen name="ReportDetails" component={ReportDetailScreen} />
             </Stack.Navigator>
           </NavigationContainer>
         </ToastProvider>

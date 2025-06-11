@@ -59,27 +59,6 @@ export const register = StyleSheet.create({
   },
 });
 
-export const logout = StyleSheet.create({
-  button: {
-    position: 'absolute',
-    bottom: 130,
-    right: 15,
-    backgroundColor: '#E74C3C',
-    borderRadius: 50,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    zIndex: 10,
-    elevation: 5,
-  },
-  text: {
-    color: '#fff',
-    marginLeft: 10,
-    fontSize: 18,
-    fontWeight: '600',
-  },
-});
 
 export const modal = StyleSheet.create({
   overlay: {

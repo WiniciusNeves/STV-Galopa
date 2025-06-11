@@ -1,22 +1,23 @@
 import React from 'react';
-import { Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text, TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import colors from '../../styles/Colors';
 
 interface GradientButtonProps {
   text: string;
   onPress: () => void;
-  style?: ViewStyle ; // Add this line
+  style?: ViewStyle; // Add this line
+  gradientStyle?: ViewStyle;
 }
 
-export default function GradientButton({ text, onPress, style }: GradientButtonProps) {
+export default function GradientButton({ text, onPress, style, gradientStyle }: GradientButtonProps) {
   return (
     <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
       <LinearGradient
         colors={[colors.degradeStart, colors.degradeEnd]}
         start={[0, 0]}
         end={[1, 0]}
-        style={styles.gradient}
+        style={[styles.gradient, gradientStyle]}
       >
         <Text style={styles.text}>{text}</Text>
       </LinearGradient>
@@ -29,6 +30,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     overflow: 'hidden',
     width: '80%',
+
   },
   gradient: {
     paddingVertical: 12,

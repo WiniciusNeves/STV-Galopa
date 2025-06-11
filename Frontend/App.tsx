@@ -4,6 +4,7 @@ import {
     ActivityIndicator,
     StyleSheet,
     Image,
+    Text,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import colors from './src/styles/Colors';
@@ -14,24 +15,24 @@ export default function App() {  // <- ALTERADO de LoadingScreen para App
     const { user, userRole, isLoadingAuth } = useAuth();
 
     useEffect(() => {
-        console.log('App - useEffect disparado');
-        console.log('App - user:', user);
-        console.log('App - userRole:', userRole);
-        console.log('App - isLoadingAuth:', isLoadingAuth);
+        console.info('App - useEffect disparado');
+        console.info('App - user:', user);
+        console.info('App - userRole:', userRole);
+        console.info('App - isLoadingAuth:', isLoadingAuth);
 
         if (!isLoadingAuth) {
             if (userRole === 'admin') {
-                console.log('App - Navegando para ReportListScreen (Admin)');
+                console.info('App - Navegando para ReportListScreen (Admin)');
                 navigation.replace('ReportListScreen');
             } else if (userRole === 'user') {
-                console.log('App - Navegando para ChecklistScreen (User)');
+                console.info('App - Navegando para ChecklistScreen (User)');
                 navigation.replace('ChecklistScreen');
             } else {
-                console.log('App - Navegando para Auth');
+                console.info('App - Navegando para Auth');
                 navigation.replace('Auth');
             }
         }
-    }, [user, userRole, isLoadingAuth, navigation]);
+    }, [user, userRole, isLoadingAuth, Error, navigation]);
 
     return (
         <View style={styles.container}>
@@ -48,9 +49,10 @@ export default function App() {  // <- ALTERADO de LoadingScreen para App
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.background,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: colors.background,
+        padding: 20,
     },
     logo: {
         width: 200,
@@ -58,3 +60,4 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
 });
+
