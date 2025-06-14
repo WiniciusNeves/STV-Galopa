@@ -10,14 +10,15 @@ const authenticate = async (req, res, next) => {
 
   try {
     const decodedToken = await admin.auth().verifyIdToken(token);
+    console.log("Token decodificado:", decodedToken); // Adicione isto
     req.user = {
       uid: decodedToken.uid,
-      role: decodedToken.role || (decodedToken.customClaims ? decodedToken.customClaims.role : null)
+      role: decodedToken.role || decodedToken.customClaims?.role || null,
     };
     next();
   } catch (error) {
-    console.error(error);
-    res.status(401).json({ error: "Token inválido." });
+    console.error("Erro na autenticação:", error);
+    return res.status(401).json({ error: "Token inválido." });
   }
 };
 
@@ -30,4 +31,3 @@ const isAdmin = (req, res, next) => {
 };
 
 module.exports = { authenticate, isAdmin };
-

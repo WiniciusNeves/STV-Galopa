@@ -19,7 +19,7 @@ export const ToastProvider = ({ children }) => {
       <CustomToast
         text1={text1}
         text2={text2}
-        backgroundColor="#0000"
+        backgroundColor="#006F45"
         borderColor="#002C1B"
       />
     ),
@@ -27,7 +27,7 @@ export const ToastProvider = ({ children }) => {
       <CustomToast
         text1={text1}
         text2={text2}
-        backgroundColor="#f8d7da"
+        backgroundColor="#006F45"
         borderColor="#721c24"
       />
     ),
@@ -35,7 +35,7 @@ export const ToastProvider = ({ children }) => {
       <CustomToast
         text1={text1}
         text2={text2}
-        backgroundColor="#fff3cd"
+        backgroundColor="#006F45"
         borderColor="#856404"
       />
     ),
@@ -43,7 +43,7 @@ export const ToastProvider = ({ children }) => {
       <CustomToast
         text1={text1}
         text2={text2}
-        backgroundColor="#d1ecf1"
+        backgroundColor="#006F45"
         borderColor="#0c5460"
       />
     ),

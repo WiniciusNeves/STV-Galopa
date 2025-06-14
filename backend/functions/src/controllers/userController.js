@@ -2,16 +2,26 @@ const admin = require("../config/firebase");
 
 // Criar usuário
 exports.createUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ error: "Email e senha são obrigatórios." });
   }
-
   try {
     const user = await admin.auth().createUser({ email, password });
+
+    if (role) {
+      await admin.auth().setCustomUserClaims(user.uid, { role });
+    }
+
     const token = await admin.auth().createCustomToken(user.uid);
-    res.status(201).json({ message: "Usuário criado!", uid: user.uid, token });
+
+    res.status(201).json({
+      message: "Usuário criado!",
+      uid: user.uid,
+      role: role || "user",
+      token
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message || "Erro ao criar usuário." });
@@ -85,4 +95,3 @@ exports.setAdminRole = async (req, res) => {
     res.status(500).json({ error: error.message || "Erro ao definir role." });
   }
 };
-
