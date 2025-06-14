@@ -148,7 +148,15 @@ export default function ReportDetailScreen() {
           <Image source={{ uri: selectedImage || '' }} style={styles.modalImage} />
         </View>
       </Modal>
-
+      
+      {/* Botão de voltar */}
+      <Pressable
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back" size={30} color="#fff" />
+      </Pressable>
+      
 
       {/* Rodapé */}
       <MenuBottom userRole={userRole} />

@@ -59,11 +59,15 @@ export default function MenuBottom({ userRole }: MenuBottomProps) {
   };
 
   const handleTrackingPress = () => {
-    showToast({
-      type: 'info',
-      text1: 'Em manutenção...',
-      text2: 'O recurso de rastreamento está em desenvolvimento.',
-    });
+    if (userRole !== 'admin') {
+      showToast({
+        type: 'error',
+        text1: 'Acesso negado!',
+        text2: 'Você precisa da permissão de administrador ou usuário para acessar rastreamento.',
+      });
+      return;
+    }
+    navigation.navigate('TrackingScreen');
   };
 
   const handleRegisterPress = () => {

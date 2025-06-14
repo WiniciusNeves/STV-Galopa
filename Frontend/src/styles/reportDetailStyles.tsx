@@ -161,6 +161,19 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 6,
   },
+  backButton: {	
+    position: 'absolute',
+    top: 80,
+    left: 20,
+    zIndex: 2,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 20,
+    padding: 6,
+  },
+  backButtonText: {
+    color: '#fff',
+    marginLeft: 8,
+  },
 
 });
 
