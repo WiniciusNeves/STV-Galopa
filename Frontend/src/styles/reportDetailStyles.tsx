@@ -9,11 +9,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 10,
+   
   },
   logoImage: {
     width: "100%",
-    marginBottom: 10,
+    marginBottom: 20,
   },
   logoutContainer: {
     padding: 5,
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   },
   backButton: {	
     position: 'absolute',
-    top: 80,
+    top: 105,
     left: 20,
     zIndex: 2,
     backgroundColor: 'rgba(0,0,0,0.6)',

@@ -15,10 +15,9 @@ const apiRouter = axios.create({
 
 apiRouter.interceptors.request.use(
   async (config) => {
-    // Pega o token usando getAuthData
-    // 🎉 MUDANÇA AQUI: Chamar getAuthData e extrair o token 🎉
+   
     const authData = await getAuthData();
-    const token = authData.token; // O token está dentro do objeto retornado por getAuthData
+    const token = authData.token; 
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -32,7 +31,6 @@ apiRouter.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Interceptador de resposta (opcional)
 apiRouter.interceptors.response.use(
   (response) => response,
   (error) => {

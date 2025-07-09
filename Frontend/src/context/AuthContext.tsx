@@ -1,16 +1,12 @@
 // AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Alert } from "react-native";
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { app } from '../service/firebaseConfig'; // ajuste conforme seu caminho
-import { getAuthData, clearAuthStorage } from '../service/authService'; // já com getIdTokenResult
-import { login as loginService, logout as logoutService } from '../service/userService';
+import { auth } from '../service/firebaseConfig';
+import { getAuthData, clearAuthStorage } from '../service/authService';
 
-// Chaves consistentes
 const ASYNC_STORAGE_ROLE_KEY = '@userRole';
-const ASYNC_STORAGE_TOKEN_KEY = '@token';
-const ASYNC_STORAGE_USER_DATA_KEY = '@user';
 
 interface UserData {
   uid?: string;
@@ -35,78 +31,98 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
-  const auth = getAuth(app);
-
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, rememberMe: boolean) => {
     try {
-      const loggedUser = await loginService(email, password);
-      if (loggedUser && loggedUser.token && loggedUser.role) {
-        // Ensure email is string or undefined, not null
-        const userData: UserData = {
-          ...loggedUser,
-          email: loggedUser.email ?? undefined,
-        };
-        setUser(userData);
-        setUserRole(userData.role);
-        return userData;
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      const { token, role, expiration } = await getAuthData();
+
+      if (!token || !role) {
+        throw new Error('Token ou role ausente');
       }
-      return null;
+
+      const userData: UserData = {
+        uid: cred.user.uid,
+        email: cred.user.email ?? undefined,
+        token,
+        role,
+        expiration,
+      };
+
+      setUser(userData);
+      setUserRole(role);
+
+      await AsyncStorage.setItem(ASYNC_STORAGE_ROLE_KEY, role);
+      await AsyncStorage.setItem('@rememberMe', rememberMe ? 'true' : 'false');
+
+      console.log('[AUTH] Login realizado e role salva.');
+      return userData;
     } catch (error) {
-      console.error("Erro no login do AuthContext:", error);
-      Alert.alert("Erro", "Erro ao realizar login.");
+      console.error("[AUTH] Erro no login:", error);
+      Alert.alert("Erro", "Usuário ou senha inválidos.");
       return null;
     }
   };
 
   const logout = async () => {
     try {
-      await logoutService(navigator); // Firebase signOut + limpeza
+      await signOut(auth);
+      await AsyncStorage.removeItem(ASYNC_STORAGE_ROLE_KEY);
+      await clearAuthStorage();
+
       setUser(null);
       setUserRole(null);
-      await clearAuthStorage();
+      console.log('[AUTH] Logout concluído.');
     } catch (error) {
-      console.error("Erro no logout do AuthContext:", error);
+      console.error("Erro no logout:", error);
       Alert.alert("Erro", "Erro ao realizar logout.");
     }
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        try {
-          const { token, role, expiration } = await getAuthData();
-
-          if (!token) {
-            console.warn('Token ausente. Realizando logout.');
-            await logout();
-            return;
-          }
-
-          const userData: UserData = {
-            uid: firebaseUser.uid,
-            email: firebaseUser.email ?? undefined,
-            token,
-            role,
-            expiration,
-          };
-
-          setUser(userData);
-          setUserRole(role);
-        } catch (err) {
-          console.error("Erro ao obter dados do usuário:", err);
-          await logout();
-        }
-      } else {
-        // Usuário deslogado
+    const checkRememberMe = async () => {
+      const rememberMe = await AsyncStorage.getItem('@rememberMe');
+      if (rememberMe !== 'true') {
+        // Se não for para lembrar, faz logout automático
+        await signOut(auth);
         await clearAuthStorage();
         setUser(null);
         setUserRole(null);
+        setIsLoadingAuth(false);
+        return;
       }
 
-      setIsLoadingAuth(false);
-    });
+      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+        if (firebaseUser) {
+          try {
+            const { token, role, expiration } = await getAuthData();
+            const storedRole = await AsyncStorage.getItem(ASYNC_STORAGE_ROLE_KEY);
 
-    return () => unsubscribe();
+            const userData: UserData = {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email ?? undefined,
+              token,
+              role: storedRole || role,
+              expiration,
+            };
+
+            setUser(userData);
+            setUserRole(storedRole || role);
+            console.log('[AUTH] Sessão restaurada pelo Firebase.');
+          } catch (err) {
+            console.error("[AUTH] Erro ao obter dados no restore:", err);
+            await logout();
+          }
+        } else {
+          setUser(null);
+          setUserRole(null);
+        }
+        setIsLoadingAuth(false);
+      });
+
+      return () => unsubscribe();
+    };
+
+    checkRememberMe();
   }, []);
 
   return (

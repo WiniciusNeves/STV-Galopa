@@ -196,15 +196,16 @@ export default function ReportListScreen() {
                     renderItem={({ item }) => {
                         const displayCreatedAt = convertFirestoreTimestampToDate(item.createdAt);
 
-                        const dateStr = displayCreatedAt ? `${displayCreatedAt.getDate().toString().padStart(2, '0')}/${(displayCreatedAt.getMonth() + 1)
-                            .toString()
-                            .padStart(2, '0')}/${displayCreatedAt.getFullYear()}`
+                        const dateStr = displayCreatedAt
+                            ? displayCreatedAt.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
                             : '-';
 
-                        const timeStr = displayCreatedAt ? `${(displayCreatedAt.getHours() - 3).toString().padStart(2, '0')}:${displayCreatedAt
-                            .getMinutes()
-                            .toString()
-                            .padStart(2, '0')}`
+                        const timeStr = displayCreatedAt
+                            ? displayCreatedAt.toLocaleTimeString('pt-BR', { 
+                                hour: '2-digit', 
+                                minute: '2-digit', 
+                                timeZone: 'America/Sao_Paulo'
+                              })
                             : '-';
 
                         return (

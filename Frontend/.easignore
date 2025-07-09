@@ -20,3 +20,6 @@ web-build
 # Pastas temporárias
 .expo
 .expo-shared
+
+/android
+/ios

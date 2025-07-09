@@ -1,10 +1,8 @@
-// firebaseConfig.ts
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getStorage } from "firebase/storage";
-
-// @ts-ignore
+import { initializeAuth, getReactNativePersistence } from "firebase/auth";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FIREBASE_API_KEY, FIREBASE_AUTH_DOMAIN, FIREBASE_PROJECT_ID, FIREBASE_STORAGE_BUCKET, FIREBASE_MESSAGING_SENDER_ID, FIREBASE_APP_ID, FIREBASE_MEASUREMENT_ID } from '@env';
-
 
 const firebaseConfig = {
   apiKey: FIREBASE_API_KEY,
@@ -16,8 +14,12 @@ const firebaseConfig = {
   measurementId: FIREBASE_MEASUREMENT_ID
 };
 
-// Inicializa o Firebase e o Storage
-const app = getApps().length === 0 ? initializeApp(firebaseConfig as any) : getApp();
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+
+const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage)
+});
+
 const storage = getStorage(app);
 
-export { app, storage };
+export { app, auth, storage };
