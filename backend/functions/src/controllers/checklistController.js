@@ -37,6 +37,13 @@ exports.createChecklist = async (req, res) => {
     const hasDocumento = ["true", true, "sim"].includes(temDocumento);
     const hasFuelCard = ["true", true, "sim"].includes(temCartaoCombustivel);
 
+    const processedFotos = fotos.map((foto) => {
+      if (foto && typeof foto.url === 'string' && typeof foto.tipo === 'string') {
+        return { url: foto.url, tipo: foto.tipo };
+      }
+      return null;
+    }).filter((foto) => foto !== null);
+
     const checklistData = {
       sector,
       area: area || null,
@@ -47,7 +54,7 @@ exports.createChecklist = async (req, res) => {
       nivelOleo,
       pneus,
       descricao,
-      fotos,
+      fotos: processedFotos,
       type: type ? type.toLowerCase() : null,
       vehicleCategory,
       temDocumento: hasDocumento,
@@ -133,6 +140,17 @@ exports.updateChecklist = async (req, res) => {
     }
     if (Object.prototype.hasOwnProperty.call(updateData, "temCartaoCombustivel")) {
       updateData.temCartaoCombustivel = ["true", true, "sim"].includes(updateData.temCartaoCombustivel);
+    }
+
+    if (Object.prototype.hasOwnProperty.call(updateData, "fotos")) {
+      const incomingFotos = updateData.fotos || [];
+      const processedFotos = incomingFotos.map((foto) => {
+        if (foto && typeof foto.url === 'string' && typeof foto.tipo === 'string') {
+          return { url: foto.url, tipo: foto.tipo };
+        }
+        return null;
+      }).filter((foto) => foto !== null);
+      updateData.fotos = processedFotos;
     }
 
     updateData.updatedAt = admin.firestore.FieldValue.serverTimestamp();

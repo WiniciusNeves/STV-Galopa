@@ -4,12 +4,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#002d1f',
+
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-   
+
   },
   logoImage: {
     width: "100%",
@@ -95,14 +96,16 @@ const styles = StyleSheet.create({
   photoContainer: {
     flexDirection: 'row',
     margin: 10,
+    flexWrap: 'wrap',
+    marginBottom: 100,
 
   },
   photo: {
-    width: 100,
-    height: 100,
-    marginRight: 10,
+    width: 150,
+    height: 150,
+
     borderRadius: 8,
-    backgroundColor: '#333',
+
   },
   noPhotosText: {
     color: '#fff',
@@ -161,7 +164,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 6,
   },
-  backButton: {	
+  backButton: {
     position: 'absolute',
     top: 105,
     left: 20,
@@ -174,6 +177,46 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginLeft: 8,
   },
+   loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#002d1f', // Use a cor de fundo do seu tema
+  },
+  loadingText: {
+    color: '#fff', // Use a cor de texto do seu tema
+    marginTop: 10,
+    fontSize: 16,
+  },
+  photoGridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap', // Permite que os itens quebrem para a próxima linha
+    justifyContent: 'space-around', // Distribui os itens uniformemente
+    marginTop: 10,
+  },
+  photoItem: {
+    width: '40%', // Aproximadamente metade da largura, considerando o espaçamento
+    aspectRatio: 1, // Mantém a proporção quadrada
+    marginVertical: 5,
+    marginHorizontal: 5,
+    borderRadius: 8,
+    overflow: 'hidden',
+    backgroundColor: '#003f2d', // Use a cor de fundo do seu inputBackground
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  photoTypeText: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    color: '#fff', // Use a cor de texto do seu tema
+    fontSize: 12,
+    paddingVertical: 5,
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  
 
 });
 

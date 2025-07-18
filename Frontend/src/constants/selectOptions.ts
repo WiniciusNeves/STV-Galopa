@@ -21,7 +21,8 @@ export const nameOptions = [
   "PAZETTE",
   "CLAIRTON",
   "JONATAN",
-  "JAISSON"
+  "JAISSON",
+  "RODRIGO",
 ];
 
 export const allPlateOptions = [

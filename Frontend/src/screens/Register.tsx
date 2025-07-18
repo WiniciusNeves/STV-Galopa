@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
     Alert,
     Animated,
-    FlatList,
+    FlatList, // Ainda pode ser útil para outros fins, mas não para a lista de fotos agora
     Image,
     KeyboardAvoidingView,
     Platform,
@@ -10,11 +10,10 @@ import {
     TextInput,
     TouchableOpacity,
     View,
-    ActivityIndicator, 
+    ActivityIndicator,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import styles from "../styles/Register";
-import { createChecklistWithAuth } from "../service/checklistService"; 
+import styles from "../styles/Register"; // Seus estilos existentes
+import { createChecklistWithAuth } from "../service/checklistService";
 
 import AnimatedSelect from "../components/common/AnimatedSelect";
 import GradientButton from "../components/auth/GradientButton";
@@ -24,19 +23,22 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 import {
-    areaOptions as areaPAOptions, 
+    areaOptions as areaPAOptions,
     nameOptions,
-    allPlateOptions, 
+    allPlateOptions,
     tireConditionOptions,
-    fuelLevelOptions, 
-    oilLevelOptions, 
-    sectorOptions, 
-    vehicleCategoryOptionsPA, 
-    vehicleCategoryOptionsFT, 
-    relacaoTransmissaoOptions, 
+    fuelLevelOptions,
+    oilLevelOptions,
+    sectorOptions,
+    vehicleCategoryOptionsPA,
+    vehicleCategoryOptionsFT,
+    relacaoTransmissaoOptions,
     statusRecebimentoEntregaOptions,
 } from "../constants/selectOptions";
 import Logout from "../components/common/Logout";
+
+// Importe o novo componente de upload de fotos
+import PhotoUploadSection, { PhotoWithMetadata } from "../components/common/PhotoUploadSection";
 
 export default function RegistroScreen() {
     const translateXAnim = useRef(new Animated.Value(-1000)).current;
@@ -62,8 +64,9 @@ export default function RegistroScreen() {
     const [statusRecebimentoEntrega, setStatusRecebimentoEntrega] = useState("");
 
     const [description, setDescription] = useState("");
-    const [photos, setPhotos] = useState<string[]>([]); 
-    const [isSubmitting, setIsSubmitting] = useState(false); 
+    // Modificado: photos agora é um array de objetos PhotoWithMetadata
+    const [photos, setPhotos] = useState<PhotoWithMetadata[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [userRole, setUserRole] = useState("");
     const [openSelectKey, setOpenSelectKey] = useState<string | null>(null);
 
@@ -99,10 +102,10 @@ export default function RegistroScreen() {
         setSelectedVehicleCategory(null);
         setFilteredPlateOptions([]);
         setSelectedPlate("");
-        setKm(""); 
-        setFuelLevel(""); 
-        setOilLevel(""); 
-        setTireCondition(""); 
+        setKm("");
+        setFuelLevel("");
+        setOilLevel("");
+        setTireCondition("");
         setHasSpareTire(false);
         setRelacaoTransmissao("");
         setTemBau(false);
@@ -110,50 +113,12 @@ export default function RegistroScreen() {
         setTemCartaoCombustivel(false);
         setStatusRecebimentoEntrega("");
         setDescription("");
-        setPhotos([]);
+        setPhotos([]); // Limpa as fotos também
     }, [selectedSector]);
 
-    const handleSelectGallery = async () => {
-        if (isSubmitting) return;
-
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-            Alert.alert('Permissão Negada', 'Você precisa conceder permissão para acessar a galeria.');
-            return;
-        }
-
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsMultipleSelection: true,
-            quality: 1, 
-            aspect: [4, 3],
-        });
-
-        if (!result.canceled && result.assets) {
-            const selectedPhotosUris = result.assets.map((asset) => asset.uri);
-            setPhotos((prev) => [...prev, ...selectedPhotosUris]); 
-        }
-    };
-
-    const handleTakePhoto = async () => {
-        if (isSubmitting) return;
-
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        if (status !== 'granted') {
-            Alert.alert('Permissão Negada', 'Você precisa conceder permissão para acessar a câmera.');
-            return;
-        }
-
-        const result = await ImagePicker.launchCameraAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            quality: 1, 
-            aspect: [4, 3],
-        });
-
-        if (!result.canceled && result.assets) {
-            const photoUri = result.assets[0].uri;
-            setPhotos((prev) => [...prev, photoUri]); 
-        }
+    // Função para ser passada para PhotoUploadSection para atualizar as fotos
+    const handlePhotosChange = (updatedPhotos: PhotoWithMetadata[]) => {
+        setPhotos(updatedPhotos);
     };
 
     const handleSave = async () => {
@@ -202,8 +167,23 @@ export default function RegistroScreen() {
             return Alert.alert("Erro", "Quilometragem deve ser um número válido e maior que zero.");
         }
 
-        if (photos.length === 0) {
-            return Alert.alert("Fotos Obrigatórias", "Por favor, adicione pelo menos uma foto.");
+        // Validação das fotos: Verifique se todas as fotos obrigatórias foram tiradas
+        const requiredPhotoTypes = (category: string | null) => {
+            if (category === 'VTR' || category === 'MOTO') {
+                return ['Frente', 'Traseira', 'Lado Direito', 'Lado Esquerdo', 'Painel'];
+            }
+            return [];
+        };
+
+        const missingPhotos = requiredPhotoTypes(selectedVehicleCategory).filter(type =>
+            !photos.some(p => p.type === type && p.uri !== '')
+        );
+
+        if (missingPhotos.length > 0) {
+            return Alert.alert(
+                "Fotos Obrigatórias",
+                `Por favor, adicione as seguintes fotos: \n${missingPhotos.join('\n')}`
+            );
         }
 
         setIsSubmitting(true);
@@ -233,10 +213,12 @@ export default function RegistroScreen() {
         }
 
         try {
-            const result = await createChecklistWithAuth(checklistData, photos); 
+            // createChecklistWithAuth agora espera o array de objetos { uri, type }
+            const result = await createChecklistWithAuth(checklistData, photos);
 
             if (result) {
                 Alert.alert("Sucesso", "Checklist enviado com sucesso!");
+                // Resetar todos os estados
                 setSelectedSector(null);
                 setSelectedArea("");
                 setSelectedVehicleCategory(null);
@@ -254,7 +236,7 @@ export default function RegistroScreen() {
                 setTemCartaoCombustivel(false);
                 setStatusRecebimentoEntrega("");
                 setDescription("");
-                setPhotos([]); 
+                setPhotos([]); // Limpa as fotos
             } else {
                 Alert.alert("Erro", "Falha ao enviar o checklist. Tente novamente.");
             }
@@ -262,7 +244,7 @@ export default function RegistroScreen() {
             console.error("Erro inesperado ao salvar checklist no frontend:", error);
             Alert.alert("Erro", "Ocorreu um erro inesperado ao salvar o checklist.");
         } finally {
-            setIsSubmitting(false); 
+            setIsSubmitting(false);
         }
     };
 
@@ -289,7 +271,7 @@ export default function RegistroScreen() {
                         selectKey="sector"
                         openKey={openSelectKey}
                         setOpenKey={setOpenSelectKey}
-                        disabled={isSubmitting} 
+                        disabled={isSubmitting}
                     />
 
                     {selectedSector && (
@@ -447,7 +429,7 @@ export default function RegistroScreen() {
                                             <Text style={styles.checkboxLabel}>Tem Documento</Text>
                                         </TouchableOpacity>
                                     </View>
-                                    
+
                                     <View style={styles.row}>
                                         <TouchableOpacity
                                             onPress={() => setTemCartaoCombustivel(!temCartaoCombustivel)}
@@ -480,44 +462,21 @@ export default function RegistroScreen() {
                                         onChangeText={setDescription}
                                         editable={!isSubmitting}
                                     />
-                                    
-                                    <View style={styles.buttonRow}>
-                                        <TouchableOpacity onPress={handleSelectGallery} style={styles.photoButton} disabled={isSubmitting}>
-                                            {isSubmitting ? ( 
-                                                <ActivityIndicator color="#fff" size="small" />
-                                            ) : (
-                                                <Text style={styles.photoButtonText}>Galeria</Text>
-                                            )}
-                                        </TouchableOpacity>
-                                        <TouchableOpacity onPress={handleTakePhoto} style={styles.photoButton} disabled={isSubmitting}>
-                                            {isSubmitting ? ( 
-                                                <ActivityIndicator color="#fff" size="small" />
-                                            ) : (
-                                                <Text style={styles.photoButtonText}>Câmera</Text>
-                                            )}
-                                        </TouchableOpacity>
-                                    </View>
-                                    
-                                    {photos.length > 0 && (
-                                        <FlatList
-                                            data={photos}
-                                            horizontal
-                                            keyExtractor={(item, index) => item + index}
-                                            renderItem={({ item }) => (
-                                                <View style={styles.photoPreview}>
-                                                    <Image source={{ uri: item }} style={styles.photoImage} />
-                                                </View>
-                                            )}
-                                            style={styles.photoList}
-                                        />
-                                    )}
+
+                                    {/* Novo componente para upload de fotos */}
+                                    <PhotoUploadSection
+                                        vehicleCategory={selectedVehicleCategory}
+                                        onPhotosChange={handlePhotosChange}
+                                        isSubmitting={isSubmitting}
+                                        // initialPhotos={...} // Se você tiver fotos para pré-carregar (edição)
+                                    />
 
                                     <GradientButton
                                         text={isSubmitting ? "Enviando..." : "Confirmar envio"}
                                         onPress={handleSave}
                                         style={{ marginHorizontal: 35, opacity: isSubmitting ? 0.7 : 1, marginTop: 20 }}
                                         gradientStyle={{ height: 60, alignItems: "center", justifyContent: "center" }}
-                                        disabled={isSubmitting} 
+                                        disabled={isSubmitting}
                                     />
                                 </>
                             )}

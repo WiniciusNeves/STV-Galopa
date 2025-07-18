@@ -45,7 +45,7 @@ export default function LoginScreen() {
             if (user.role === 'admin') {
                 navigation.replace('ReportListScreen');
             } else if (user.role === 'user') {
-                navigation.replace('ChecklistScreen');
+                navigation.replace('Register');
             } else {
                 navigation.replace('Auth');
             }
@@ -132,6 +132,9 @@ export default function LoginScreen() {
                         </Text>
                         <Text style={{ color: colors.grey, textAlign: 'center' }}>
                             Versão 1.0.0
+                        </Text>
+                        <Text style={{ color: colors.grey, textAlign: 'center' }}>
+                            Desenvolvido por Inove.dev
                         </Text>
                     </View>
                 </View>

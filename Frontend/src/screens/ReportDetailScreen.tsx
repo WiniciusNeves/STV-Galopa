@@ -7,6 +7,8 @@ import {
   Modal,
   Pressable,
   TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,23 +18,33 @@ import styles from '../styles/reportDetailStyles';
 import MenuBottom from '../components/common/MenuBottom';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Logout from '../components/common/Logout';
+import colors from '../styles/Colors';
 
 interface Report {
-  area: string;
+  area?: string;
   nome: string;
   placa: string;
-  quilometragem: number;
-  nivelCombustivel: string;
-  temEstepe: boolean;
-  pneus: boolean;
-  descricao: string;
-  fotos: string[];
+  quilometragem?: number;
+  nivelCombustivel?: string;
+  nivelOleo?: string;
+  pneus?: string | boolean;
+  temEstepe?: boolean;
+  relacaoTransmissao?: string;
+  temBau?: boolean;
+  temDocumento?: boolean;
+  temCartaoCombustivel?: boolean;
+  statusRecebimentoEntrega: string;
+  descricao?: string;
+  fotos: string[] | { url: string; tipo: string }[];
   createdAt: any;
+  sector: string;
+  type?: string;
+  vehicleCategory: string;
 }
 
 export default function ReportDetailScreen() {
   const route = useRoute();
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const report = (route.params as any)?.report as Report;
   const [userRole, setUserRole] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
@@ -54,10 +66,19 @@ export default function ReportDetailScreen() {
 
   const dateObj = getDateObject(report?.createdAt);
 
-  const handleImagePress = (uri: string) => {
-    setSelectedImage(uri);
+  const handleImagePress = (url: string) => {
+    setSelectedImage(url || '');
     setModalVisible(true);
   };
+
+  if (!report) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={styles.loadingText}>Carregando detalhes do relatório...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -94,28 +115,33 @@ export default function ReportDetailScreen() {
       {/* Conteúdo */}
       <ScrollView style={styles.content}>
         {[
+          { label: 'Setor', value: report?.sector },
           { label: 'Área', value: report?.area },
           { label: 'Nome', value: report?.nome },
           { label: 'Placa', value: report?.placa },
-          {
-            label: 'Quilometragem',
-            value: report?.quilometragem != null
-              ? `${report.quilometragem} km`
-              : '–',
-          },
-          { label: 'Nível de combustível', value: report?.nivelCombustivel },
-          { label: 'Tem estepe', value: report?.temEstepe ? 'Sim' : 'Não' },
-          { label: 'Pneus em bom estado', value: report?.pneus ? 'Sim' : 'Não' },
+          { label: 'Tipo de Veículo', value: report?.vehicleCategory },
+          { label: 'KM Atual', value: report?.quilometragem != null ? `${report.quilometragem} km` : '–' },
+          { label: 'Nível de Combustível', value: report?.nivelCombustivel },
+          { label: 'Nível de Óleo', value: report?.nivelOleo },
+          { label: 'Estado dos Pneus', value: report?.pneus ? (report.pneus === true ? 'Sim' : report.pneus) : '–' },
+          { label: 'Tem Estepe', value: report?.temEstepe ? 'Sim' : 'Não', condition: report?.type === 'carro' },
+          { label: 'Relação da Transmissão', value: report?.relacaoTransmissao, condition: report?.type === 'moto' },
+          { label: 'Tem Baú', value: report?.temBau ? 'Sim' : 'Não', condition: report?.type === 'moto' },
+          { label: 'Tem Documento', value: report?.temDocumento ? 'Sim' : 'Não' },
+          { label: 'Tem Cartão Combustível', value: report?.temCartaoCombustivel ? 'Sim' : 'Não' },
+          { label: 'Status Recebimento/Entrega', value: report?.statusRecebimentoEntrega },
         ].map((item, i) => (
-          <View key={i} style={styles.row}>
-            <Text style={styles.labelInline}>{item.label}</Text>
-            <View style={styles.inlineInput}>
-              <Text style={styles.fieldText}>{item.value || '–'}</Text>
+          (item.condition === undefined || item.condition) ? (
+            <View key={i} style={styles.row}>
+              <Text style={styles.labelInline}>{item.label}</Text>
+              <View style={styles.inlineInput}>
+                <Text style={styles.fieldText}>{item.value || '–'}</Text>
+              </View>
             </View>
-          </View>
+          ) : null
         ))}
 
-        <Text style={styles.label}>Descrição</Text>
+        <Text style={styles.label}>Observações</Text>
         <View style={styles.descricaoBox}>
           <Text style={styles.descricaoText}>
             {report?.descricao || '–'}
@@ -123,13 +149,32 @@ export default function ReportDetailScreen() {
         </View>
 
         <Text style={styles.label}>Fotos</Text>
-        <View style={styles.photoContainer}>
+        <View style={styles.photoGridContainer}>
           {report?.fotos?.length ? (
-            report.fotos.map((url, idx) => (
-              <TouchableOpacity key={idx} onPress={() => handleImagePress(url)}>
-                <Image source={{ uri: url }} style={styles.photo} />
-              </TouchableOpacity>
-            ))
+            report.fotos.map((fotoItem, idx) => {
+              const imageUrl = typeof fotoItem === 'string' ? fotoItem : fotoItem.url;
+              const imageType = typeof fotoItem === 'string' ? 'Foto Genérica' : fotoItem.tipo;
+
+              return (
+                <View key={idx} style={styles.photoItem}>
+                  <TouchableOpacity onPress={() => handleImagePress(imageUrl)}>
+                    {imageUrl ? (
+                      <Image
+                        key={imageUrl}
+                        source={{ uri: imageUrl }}
+                        style={[styles.photo, { backgroundColor: 'lightgray' }]}
+                        onError={(e) => console.error("Erro ao carregar imagem:", imageUrl, e.nativeEvent.error)}
+                      />
+                    ) : (
+                      <View style={[styles.photo, { backgroundColor: 'darkgray', justifyContent: 'center', alignItems: 'center' }]}>
+                          <Text style={{ color: colors.white, fontSize: 10 }}>URL Inválida</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                  <Text style={styles.photoTypeText}>{imageType || 'Sem Tipo'}</Text>
+                </View>
+              );
+            })
           ) : (
             <Text style={styles.noPhotosText}>Nenhuma foto disponível</Text>
           )}
@@ -145,7 +190,17 @@ export default function ReportDetailScreen() {
           >
             <Ionicons name="close" size={30} color="#fff" />
           </TouchableOpacity>
-          <Image source={{ uri: selectedImage || '' }} style={styles.modalImage} />
+          {selectedImage ? (
+            <Image
+              key={selectedImage}
+              source={{ uri: selectedImage }}
+              style={[styles.modalImage, { backgroundColor: 'lightgray' }]}
+            />
+          ) : (
+            <View style={[styles.modalImage, { backgroundColor: 'darkgray', justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={{ color: colors.white, fontSize: 12 }}>Imagem não disponível</Text>
+            </View>
+          )}
         </View>
       </Modal>
       
@@ -157,7 +212,6 @@ export default function ReportDetailScreen() {
         <Ionicons name="arrow-back" size={30} color="#fff" />
       </Pressable>
       
-
       {/* Rodapé */}
       <MenuBottom userRole={userRole} />
     </View>
