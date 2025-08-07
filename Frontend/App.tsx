@@ -29,8 +29,8 @@ export default function App() {
                     navigation.replace('ReportListScreen');
                     hasNavigated.current = true;
                 } else if (userRole === 'user') {
-                    console.info('App - Navegando para ChecklistScreen (User)');
-                    navigation.replace('ChecklistScreen');
+                    console.info('App - Navegando para Register (User)');
+                    navigation.replace('Register');
                     hasNavigated.current = true;
                 } else {
                     console.warn('App - Usuário logado com role inesperado. Navegando para Auth.');

@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import {
     Alert,
     Animated,
-    FlatList, // Ainda pode ser útil para outros fins, mas não para a lista de fotos agora
     Image,
     KeyboardAvoidingView,
     Platform,
@@ -34,10 +33,10 @@ import {
     vehicleCategoryOptionsFT,
     relacaoTransmissaoOptions,
     statusRecebimentoEntregaOptions,
+    waterLevelOptions, // Importação das novas opções para nível de água
 } from "../constants/selectOptions";
 import Logout from "../components/common/Logout";
 
-// Importe o novo componente de upload de fotos
 import PhotoUploadSection, { PhotoWithMetadata } from "../components/common/PhotoUploadSection";
 
 export default function RegistroScreen() {
@@ -63,8 +62,11 @@ export default function RegistroScreen() {
     const [temCartaoCombustivel, setTemCartaoCombustivel] = useState(false);
     const [statusRecebimentoEntrega, setStatusRecebimentoEntrega] = useState("");
 
+    const [iluminacao, setIluminacao] = useState<boolean | null>(null);
+    const [temControle, setTemControle] = useState<boolean | null>(null);
+    const [waterLevel, setWaterLevel] = useState<string | null>(null); // ALTERADO: Nível de água agora é uma string (select)
+
     const [description, setDescription] = useState("");
-    // Modificado: photos agora é um array de objetos PhotoWithMetadata
     const [photos, setPhotos] = useState<PhotoWithMetadata[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [userRole, setUserRole] = useState("");
@@ -95,6 +97,10 @@ export default function RegistroScreen() {
         }
         setFilteredPlateOptions(plates);
         setSelectedPlate("");
+        // Limpa os estados de água, controle e iluminação ao mudar a categoria
+        setWaterLevel(null); // ALTERADO: resetar waterLevel para null
+        setTemControle(null);
+        setIluminacao(null);
     }, [selectedVehicleCategory]);
 
     useEffect(() => {
@@ -112,11 +118,14 @@ export default function RegistroScreen() {
         setTemDocumento(false);
         setTemCartaoCombustivel(false);
         setStatusRecebimentoEntrega("");
+        // Resetar os novos estados para null
+        setWaterLevel(null); // ALTERADO: resetar waterLevel para null
+        setTemControle(null);
+        setIluminacao(null);
         setDescription("");
-        setPhotos([]); // Limpa as fotos também
+        setPhotos([]);
     }, [selectedSector]);
 
-    // Função para ser passada para PhotoUploadSection para atualizar as fotos
     const handlePhotosChange = (updatedPhotos: PhotoWithMetadata[]) => {
         setPhotos(updatedPhotos);
     };
@@ -149,6 +158,23 @@ export default function RegistroScreen() {
             requiredFields["Relação da Transmissão"] = relacaoTransmissao;
         }
 
+        // Validação para Iluminação e Controle (obrigatório para VTR e MOTO)
+        if (selectedVehicleCategory === "VTR" || selectedVehicleCategory === "MOTO") {
+            if (iluminacao === null) {
+                return Alert.alert("Campos Obrigatórios", "Por favor, informe o estado da Iluminação.");
+            }
+            if (temControle === null) {
+                return Alert.alert("Campos Obrigatórios", "Por favor, informe se o veículo tem Controle.");
+            }
+        }
+
+        // Validação para Nível de Água (obrigatório apenas para VTR)
+        if (selectedVehicleCategory === "VTR") {
+            if (waterLevel === null || waterLevel.trim() === '') { // ALTERADO: Verificar se waterLevel está preenchido
+                return Alert.alert("Campos Obrigatórios", "Por favor, selecione o Nível de Água.");
+            }
+        }
+
         let missingFields = [];
         for (const [label, value] of Object.entries(requiredFields)) {
             if (value === null || value === undefined || (typeof value === 'string' && value.trim() === '')) {
@@ -167,7 +193,6 @@ export default function RegistroScreen() {
             return Alert.alert("Erro", "Quilometragem deve ser um número válido e maior que zero.");
         }
 
-        // Validação das fotos: Verifique se todas as fotos obrigatórias foram tiradas
         const requiredPhotoTypes = (category: string | null) => {
             if (category === 'VTR' || category === 'MOTO') {
                 return ['Frente', 'Traseira', 'Lado Direito', 'Lado Esquerdo', 'Painel'];
@@ -203,17 +228,19 @@ export default function RegistroScreen() {
             temDocumento: temDocumento,
             temCartaoCombustivel: temCartaoCombustivel,
             statusRecebimentoEntrega: statusRecebimentoEntrega,
+            iluminacao: iluminacao,
+            temControle: temControle,
         };
 
         if (selectedVehicleCategory === "VTR") {
             checklistData.temEstepe = hasSpareTire;
+            checklistData.waterLevel = waterLevel; // ALTERADO: Adiciona waterLevel para VTR
         } else if (selectedVehicleCategory === "MOTO") {
             checklistData.relacaoTransmissao = relacaoTransmissao;
             checklistData.temBau = temBau;
         }
 
         try {
-            // createChecklistWithAuth agora espera o array de objetos { uri, type }
             const result = await createChecklistWithAuth(checklistData, photos);
 
             if (result) {
@@ -235,8 +262,12 @@ export default function RegistroScreen() {
                 setTemDocumento(false);
                 setTemCartaoCombustivel(false);
                 setStatusRecebimentoEntrega("");
+                // Resetar os novos estados
+                setIluminacao(null);
+                setTemControle(null);
+                setWaterLevel(null); // ALTERADO: resetar waterLevel
                 setDescription("");
-                setPhotos([]); // Limpa as fotos
+                setPhotos([]);
             } else {
                 Alert.alert("Erro", "Falha ao enviar o checklist. Tente novamente.");
             }
@@ -367,6 +398,20 @@ export default function RegistroScreen() {
                                         setOpenKey={setOpenSelectKey}
                                         disabled={isSubmitting}
                                     />
+                                    {/* Select de Nível de Água - apenas para VTR */}
+                                    {selectedVehicleCategory === "VTR" && (
+                                        <AnimatedSelect
+                                            label="Nível de Água"
+                                            selectedValue={waterLevel}
+                                            onValueChange={setWaterLevel}
+                                            options={waterLevelOptions}
+                                            containerStyle={styles.fullWidthItem}
+                                            selectKey="waterLevel"
+                                            openKey={openSelectKey}
+                                            setOpenKey={setOpenSelectKey}
+                                            disabled={isSubmitting}
+                                        />
+                                    )}
 
                                     <AnimatedSelect
                                         label="Estado dos Pneus"
@@ -419,6 +464,34 @@ export default function RegistroScreen() {
                                         </>
                                     )}
 
+                                    {/* Checkboxes de Iluminação e Controle - para VTR e MOTO */}
+                                    {(selectedVehicleCategory === "VTR" || selectedVehicleCategory === "MOTO") && (
+                                        <>
+                                            <View style={styles.row}>
+                                                <TouchableOpacity
+                                                    onPress={() => setIluminacao(!iluminacao)}
+                                                    style={[styles.checkboxContainer, styles.fullWidthItem]}
+                                                    disabled={isSubmitting}
+                                                >
+                                                    <Entypo name={iluminacao ? "check" : "circle"} size={24} color={iluminacao ? "green" : "gray"} />
+                                                    <Text style={styles.checkboxLabel}>Iluminação OK</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                            <View style={styles.row}>
+                                                <TouchableOpacity
+                                                    onPress={() => setTemControle(!temControle)}
+                                                    style={[styles.checkboxContainer, styles.fullWidthItem]}
+                                                    disabled={isSubmitting}
+                                                >
+                                                    <Entypo name={temControle ? "check" : "circle"} size={24} color={temControle ? "green" : "gray"} />
+                                                    <Text style={styles.checkboxLabel}>Tem Controle</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </>
+                                    )}
+
+
+
                                     <View style={styles.row}>
                                         <TouchableOpacity
                                             onPress={() => setTemDocumento(!temDocumento)}
@@ -463,18 +536,16 @@ export default function RegistroScreen() {
                                         editable={!isSubmitting}
                                     />
 
-                                    {/* Novo componente para upload de fotos */}
                                     <PhotoUploadSection
                                         vehicleCategory={selectedVehicleCategory}
                                         onPhotosChange={handlePhotosChange}
                                         isSubmitting={isSubmitting}
-                                        // initialPhotos={...} // Se você tiver fotos para pré-carregar (edição)
                                     />
 
                                     <GradientButton
                                         text={isSubmitting ? "Enviando..." : "Confirmar envio"}
                                         onPress={handleSave}
-                                        style={{ marginHorizontal: 35, opacity: isSubmitting ? 0.7 : 1, marginTop: 20 }}
+                                        style={{ marginHorizontal: 35, opacity: isSubmitting ? 0.7 : 1, marginTop: 20, paddingBottom: 30 }}
                                         gradientStyle={{ height: 60, alignItems: "center", justifyContent: "center" }}
                                         disabled={isSubmitting}
                                     />

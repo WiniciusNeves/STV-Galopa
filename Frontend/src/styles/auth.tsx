@@ -12,10 +12,9 @@ export const container = StyleSheet.create({
 export const imageStyle = StyleSheet.create({
   base: {
     width: 440,
-    height: 350,
+    height: 280,
     position: 'absolute',
     top: 0,
-    borderRadius: 20,
     shadowColor: colors.black,
     shadowOffset: {
       width: 0,

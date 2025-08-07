@@ -27,7 +27,7 @@ interface Report {
   quilometragem?: number;
   nivelCombustivel?: string;
   nivelOleo?: string;
-  pneus?: string | boolean;
+  pneus?: string; // Alterado para string para ser consistente com o select
   temEstepe?: boolean;
   relacaoTransmissao?: string;
   temBau?: boolean;
@@ -40,6 +40,9 @@ interface Report {
   sector: string;
   type?: string;
   vehicleCategory: string;
+  iluminacao?: boolean; // NOVA VARIÁVEL
+  temControle?: boolean; // NOVA VARIÁVEL
+  waterLevel?: string; // NOVA VARIÁVEL (agora um select, então string)
 }
 
 export default function ReportDetailScreen() {
@@ -123,10 +126,15 @@ export default function ReportDetailScreen() {
           { label: 'KM Atual', value: report?.quilometragem != null ? `${report.quilometragem} km` : '–' },
           { label: 'Nível de Combustível', value: report?.nivelCombustivel },
           { label: 'Nível de Óleo', value: report?.nivelOleo },
-          { label: 'Estado dos Pneus', value: report?.pneus ? (report.pneus === true ? 'Sim' : report.pneus) : '–' },
-          { label: 'Tem Estepe', value: report?.temEstepe ? 'Sim' : 'Não', condition: report?.type === 'carro' },
-          { label: 'Relação da Transmissão', value: report?.relacaoTransmissao, condition: report?.type === 'moto' },
-          { label: 'Tem Baú', value: report?.temBau ? 'Sim' : 'Não', condition: report?.type === 'moto' },
+          { label: 'Estado dos Pneus', value: report?.pneus || '–' }, // Não precisa de tratamento booleano aqui
+          { label: 'Tem Estepe', value: report?.temEstepe ? 'Sim' : 'Não', condition: report?.vehicleCategory === 'VTR' },
+          { label: 'Relação da Transmissão', value: report?.relacaoTransmissao, condition: report?.vehicleCategory === 'MOTO' },
+          { label: 'Tem Baú', value: report?.temBau ? 'Sim' : 'Não', condition: report?.vehicleCategory === 'MOTO' },
+          // NOVAS VARIÁVEIS AQUI
+          { label: 'Iluminação', value: report?.iluminacao !== undefined ? (report.iluminacao ? 'OK' : 'Não OK') : '–', condition: report?.vehicleCategory === 'VTR' || report?.vehicleCategory === 'MOTO' },
+          { label: 'Tem Controle', value: report?.temControle !== undefined ? (report.temControle ? 'Sim' : 'Não') : '–', condition: report?.vehicleCategory === 'VTR' || report?.vehicleCategory === 'MOTO' },
+          { label: 'Nível de Água', value: report?.waterLevel || '–', condition: report?.vehicleCategory === 'VTR' },
+          // FIM DAS NOVAS VARIÁVEIS
           { label: 'Tem Documento', value: report?.temDocumento ? 'Sim' : 'Não' },
           { label: 'Tem Cartão Combustível', value: report?.temCartaoCombustivel ? 'Sim' : 'Não' },
           { label: 'Status Recebimento/Entrega', value: report?.statusRecebimentoEntrega },

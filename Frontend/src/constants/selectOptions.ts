@@ -18,7 +18,7 @@ export const nameOptions = [
   "RICARDO",
   "PATRIC",
   "GELSON",
-  "PAZETTE",
+  "PAZETTI",
   "CLAIRTON",
   "JONATAN",
   "JAISSON",
@@ -75,6 +75,12 @@ export const oilLevelOptions = [
   "Muito baixo (Risco de dano)",
   "Troca necessária (Próxima do limite ou vencida)"
 ];
+
+export const waterLevelOptions = [
+  "OK (Nível adequado)",
+  "Baixo (Necessita completar)",
+  "Muito baixo (Risco de superaquecimento)",
+]
 
 export const sectorOptions = [
   "PRONTO ATENDIMENTO",
