@@ -36,13 +36,12 @@ export default function LoginScreen() {
         setLoading(true);
         try {
             const user = await login(email, password, rememberMe);
-
             if (!user) {
                 Alert.alert('Erro', 'Usuário ou senha inválidos.');
                 return;
             }
 
-            if (user.role === 'admin') {
+            if (user.role === 'admin' || user.role === 'manager') {
                 navigation.replace('ReportListScreen');
             } else if (user.role === 'user') {
                 navigation.replace('Register');
@@ -56,6 +55,7 @@ export default function LoginScreen() {
             setLoading(false);
         }
     };
+
 
 
     return (
@@ -128,12 +128,12 @@ export default function LoginScreen() {
 
                     <View style={{ alignItems: 'center', position: 'absolute', top: 700 }}>
                         <Text style={{ color: colors.grey, textAlign: 'center' }}>
-                            2025 STV Segurança
+                            2025 STV Segurança 
                         </Text>
                         <Text style={{ color: colors.grey, textAlign: 'center' }}>
                             Versão 1.20.3
                         </Text>
-                        <Image source={require('../assets/img/Ativo_8.png')} style={{width:200, height:18, marginTop: 10 }} />
+                        <Image source={require('../assets/img/Ativo_8.png')} style={{ width: 200, height: 18, marginTop: 10 }} />
                     </View>
                 </View>
             </TouchableWithoutFeedback>

@@ -11,8 +11,9 @@ import {
     View,
     ActivityIndicator,
 } from "react-native";
-import styles from "../styles/Register"; // Seus estilos existentes
+import styles from "../styles/Register";
 import { createChecklistWithAuth } from "../service/checklistService";
+import { getNames, getPlates } from "../service/namePlateService";
 
 import AnimatedSelect from "../components/common/AnimatedSelect";
 import GradientButton from "../components/auth/GradientButton";
@@ -23,8 +24,6 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 
 import {
     areaOptions as areaPAOptions,
-    nameOptions,
-    allPlateOptions,
     tireConditionOptions,
     fuelLevelOptions,
     oilLevelOptions,
@@ -33,19 +32,20 @@ import {
     vehicleCategoryOptionsFT,
     relacaoTransmissaoOptions,
     statusRecebimentoEntregaOptions,
-    waterLevelOptions, // Importação das novas opções para nível de água
+    waterLevelOptions,
 } from "../constants/selectOptions";
 import Logout from "../components/common/Logout";
-
 import PhotoUploadSection, { PhotoWithMetadata } from "../components/common/PhotoUploadSection";
 
 export default function RegistroScreen() {
     const translateXAnim = useRef(new Animated.Value(-1000)).current;
 
+    const [dbNameOptions, setDbNameOptions] = useState<string[]>([]);
+    const [dbPlateOptions, setDbPlateOptions] = useState<string[]>([]);
+
     const [selectedSector, setSelectedSector] = useState<string | null>(null);
     const [selectedArea, setSelectedArea] = useState("");
     const [selectedVehicleCategory, setSelectedVehicleCategory] = useState<string | null>(null);
-
     const [selectedName, setSelectedName] = useState("");
     const [filteredPlateOptions, setFilteredPlateOptions] = useState<string[]>([]);
     const [selectedPlate, setSelectedPlate] = useState("");
@@ -53,24 +53,41 @@ export default function RegistroScreen() {
     const [fuelLevel, setFuelLevel] = useState("");
     const [oilLevel, setOilLevel] = useState("");
     const [tireCondition, setTireCondition] = useState("");
-
     const [hasSpareTire, setHasSpareTire] = useState(false);
     const [relacaoTransmissao, setRelacaoTransmissao] = useState("");
     const [temBau, setTemBau] = useState(false);
-
     const [temDocumento, setTemDocumento] = useState(false);
     const [temCartaoCombustivel, setTemCartaoCombustivel] = useState(false);
     const [statusRecebimentoEntrega, setStatusRecebimentoEntrega] = useState("");
-
-    const [iluminacao, setIluminacao] = useState<boolean | null>(null);
-    const [temControle, setTemControle] = useState<boolean | null>(null);
-    const [waterLevel, setWaterLevel] = useState<string | null>(null); // ALTERADO: Nível de água agora é uma string (select)
-
+    const [iluminacao, setIluminacao] = useState<boolean>(false);
+    const [temControle, setTemControle] = useState<boolean>(false);
+    const [waterLevel, setWaterLevel] = useState<string | null>(null);
     const [description, setDescription] = useState("");
     const [photos, setPhotos] = useState<PhotoWithMetadata[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [userRole, setUserRole] = useState("");
     const [openSelectKey, setOpenSelectKey] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            try {
+                const [namesData, platesData] = await Promise.all([getNames(), getPlates()]);
+
+                if (namesData) {
+                    setDbNameOptions(namesData.map(item => item.name));
+                }
+
+                if (platesData) {
+                    setDbPlateOptions(platesData.map(item => item.plate));
+                }
+            } catch (error) {
+                console.error("Erro ao buscar opções de nome/placa:", error);
+                Alert.alert("Erro", "Não foi possível carregar as opções de nomes e placas.");
+            }
+        };
+
+        fetchOptions();
+    }, []);
 
     useEffect(() => {
         Animated.timing(translateXAnim, {
@@ -88,20 +105,21 @@ export default function RegistroScreen() {
         fetchRole();
     }, []);
 
+    // << MUDANÇA: Lógica de filtro por prefixo 'VTR' ou 'MOTO' REINSERIDA.
     useEffect(() => {
         let plates: string[] = [];
         if (selectedVehicleCategory === "VTR") {
-            plates = allPlateOptions.filter(plate => plate.startsWith("VTR "));
+            plates = dbPlateOptions.filter(plate => plate.startsWith("VTR "));
         } else if (selectedVehicleCategory === "MOTO") {
-            plates = allPlateOptions.filter(plate => plate.startsWith("MOTO "));
+            plates = dbPlateOptions.filter(plate => plate.startsWith("MOTO "));
         }
         setFilteredPlateOptions(plates);
+        
         setSelectedPlate("");
-        // Limpa os estados de água, controle e iluminação ao mudar a categoria
-        setWaterLevel(null); // ALTERADO: resetar waterLevel para null
-        setTemControle(null);
-        setIluminacao(null);
-    }, [selectedVehicleCategory]);
+        setWaterLevel(null);
+        setTemControle(false);
+        setIluminacao(false);
+    }, [selectedVehicleCategory, dbPlateOptions]);
 
     useEffect(() => {
         setSelectedArea("");
@@ -118,10 +136,9 @@ export default function RegistroScreen() {
         setTemDocumento(false);
         setTemCartaoCombustivel(false);
         setStatusRecebimentoEntrega("");
-        // Resetar os novos estados para null
-        setWaterLevel(null); // ALTERADO: resetar waterLevel para null
-        setTemControle(null);
-        setIluminacao(null);
+        setWaterLevel(null);
+        setTemControle(false);
+        setIluminacao(false);
         setDescription("");
         setPhotos([]);
     }, [selectedSector]);
@@ -132,7 +149,6 @@ export default function RegistroScreen() {
 
     const handleSave = async () => {
         if (isSubmitting) {
-            console.log("Submissão já em andamento, ignorando clique.");
             return;
         }
 
@@ -158,19 +174,8 @@ export default function RegistroScreen() {
             requiredFields["Relação da Transmissão"] = relacaoTransmissao;
         }
 
-        // Validação para Iluminação e Controle (obrigatório para VTR e MOTO)
-        if (selectedVehicleCategory === "VTR" || selectedVehicleCategory === "MOTO") {
-            if (iluminacao === null) {
-                return Alert.alert("Campos Obrigatórios", "Por favor, informe o estado da Iluminação.");
-            }
-            if (temControle === null) {
-                return Alert.alert("Campos Obrigatórios", "Por favor, informe se o veículo tem Controle.");
-            }
-        }
-
-        // Validação para Nível de Água (obrigatório apenas para VTR)
         if (selectedVehicleCategory === "VTR") {
-            if (waterLevel === null || waterLevel.trim() === '') { // ALTERADO: Verificar se waterLevel está preenchido
+            if (waterLevel === null || waterLevel.trim() === '') {
                 return Alert.alert("Campos Obrigatórios", "Por favor, selecione o Nível de Água.");
             }
         }
@@ -234,7 +239,7 @@ export default function RegistroScreen() {
 
         if (selectedVehicleCategory === "VTR") {
             checklistData.temEstepe = hasSpareTire;
-            checklistData.waterLevel = waterLevel; // ALTERADO: Adiciona waterLevel para VTR
+            checklistData.waterLevel = waterLevel;
         } else if (selectedVehicleCategory === "MOTO") {
             checklistData.relacaoTransmissao = relacaoTransmissao;
             checklistData.temBau = temBau;
@@ -245,29 +250,7 @@ export default function RegistroScreen() {
 
             if (result) {
                 Alert.alert("Sucesso", "Checklist enviado com sucesso!");
-                // Resetar todos os estados
                 setSelectedSector(null);
-                setSelectedArea("");
-                setSelectedVehicleCategory(null);
-                setSelectedName("");
-                setFilteredPlateOptions([]);
-                setSelectedPlate("");
-                setKm("");
-                setFuelLevel("");
-                setOilLevel("");
-                setTireCondition("");
-                setHasSpareTire(false);
-                setRelacaoTransmissao("");
-                setTemBau(false);
-                setTemDocumento(false);
-                setTemCartaoCombustivel(false);
-                setStatusRecebimentoEntrega("");
-                // Resetar os novos estados
-                setIluminacao(null);
-                setTemControle(null);
-                setWaterLevel(null); // ALTERADO: resetar waterLevel
-                setDescription("");
-                setPhotos([]);
             } else {
                 Alert.alert("Erro", "Falha ao enviar o checklist. Tente novamente.");
             }
@@ -344,7 +327,7 @@ export default function RegistroScreen() {
                                             label="Nome"
                                             selectedValue={selectedName}
                                             onValueChange={setSelectedName}
-                                            options={nameOptions}
+                                            options={dbNameOptions}
                                             containerStyle={styles.flexItem}
                                             selectKey="nome"
                                             openKey={openSelectKey}
@@ -398,7 +381,6 @@ export default function RegistroScreen() {
                                         setOpenKey={setOpenSelectKey}
                                         disabled={isSubmitting}
                                     />
-                                    {/* Select de Nível de Água - apenas para VTR */}
                                     {selectedVehicleCategory === "VTR" && (
                                         <AnimatedSelect
                                             label="Nível de Água"
@@ -464,7 +446,6 @@ export default function RegistroScreen() {
                                         </>
                                     )}
 
-                                    {/* Checkboxes de Iluminação e Controle - para VTR e MOTO */}
                                     {(selectedVehicleCategory === "VTR" || selectedVehicleCategory === "MOTO") && (
                                         <>
                                             <View style={styles.row}>
@@ -489,8 +470,6 @@ export default function RegistroScreen() {
                                             </View>
                                         </>
                                     )}
-
-
 
                                     <View style={styles.row}>
                                         <TouchableOpacity

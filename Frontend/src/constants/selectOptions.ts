@@ -5,7 +5,7 @@ export const areaOptions = [
   "APOIO 2",
   "APOIO 3",
   "APOIO 4",
-  "APOIO 5"
+  "APOIO 5",
 ];
 
 export const nameOptions = [

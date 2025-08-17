@@ -17,6 +17,7 @@ import Register from './src/screens/Register';
 import ReportListScreen from './src/screens/ReportListScreen';
 import ReportDetailScreen from './src/screens/ReportDetailScreen';
 import TrackingScreen from './src/screens/TrackingScreen';
+import AddListScreen from './src/screens/AddListScreen';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -35,6 +36,7 @@ export default function AppNavigator() {
               <Stack.Screen name="ReportListScreen" component={ReportListScreen} />
               <Stack.Screen name="ReportDetails" component={ReportDetailScreen} />
               <Stack.Screen name="TrackingScreen" component={TrackingScreen} />
+              <Stack.Screen name="AddListScreen" component={AddListScreen} />
             </Stack.Navigator>
           </NavigationContainer>
         </ToastProvider>

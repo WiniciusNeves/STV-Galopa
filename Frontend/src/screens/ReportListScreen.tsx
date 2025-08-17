@@ -22,6 +22,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
 import Logout from '../components/common/Logout';
+import { Edit } from '../components/common/edit';
 
 const { width } = Dimensions.get('window');
 const buttonWidth = (width - 40) / 2;
@@ -138,9 +139,13 @@ export default function ReportListScreen() {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Image source={require("../assets/img/logo.png")} style={styles.logoImage} />
-                <View style={styles.logoutContainer}>
-                    <Logout />
+                <Image
+                    source={require("../assets/img/logo.png")}
+                    style={styles.logoImage}
+                />
+                <View style={styles.actionsContainer}>
+                    <Edit onPress={() => navigation.navigate("AddListScreen")} style={{ marginLeft: 8 }} />
+                    <Logout width="36" />
                 </View>
             </View>
             <Image
@@ -201,11 +206,11 @@ export default function ReportListScreen() {
                             : '-';
 
                         const timeStr = displayCreatedAt
-                            ? displayCreatedAt.toLocaleTimeString('pt-BR', { 
-                                hour: '2-digit', 
-                                minute: '2-digit', 
+                            ? displayCreatedAt.toLocaleTimeString('pt-BR', {
+                                hour: '2-digit',
+                                minute: '2-digit',
                                 timeZone: 'America/Sao_Paulo'
-                              })
+                            })
                             : '-';
 
                         return (
@@ -254,18 +259,23 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-       
-        zIndex: 2, // garante que fique acima da imagem de fundo
+        width: "100%",
+        paddingTop: 8,         // opcional para afastar de cima
+        zIndex: 2,
     },
-
-    logoImage:{
-        width: "100%", 
+    logoImage: {
+        width: "100%",
         marginBottom: 15,
     },
 
-    logoutContainer: {
-        padding: 5,
+    actionsContainer: {
+        flexDirection: "row", // inverte a ordem: primeiro o vermelho, depois o verde
+        alignItems: "center",
+        gap: 8,
+        position: 'absolute',
+        right: 30,
     },
+
     cubesImage: {
         width: '100%',
         height: '100%',

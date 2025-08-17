@@ -47,7 +47,7 @@ export default function MenuBottom({ userRole }: MenuBottomProps) {
   }, [menuTranslateY]);
 
   const handleReportPress = () => {
-    if (userRole !== 'admin') {
+    if (userRole !== 'admin' && userRole !== 'manager') {
       showToast({
         type: 'error',
         text1: 'Acesso negado!',

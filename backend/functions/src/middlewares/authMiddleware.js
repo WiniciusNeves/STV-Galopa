@@ -23,7 +23,7 @@ const authenticate = async (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
-  if (req.user && req.user.role === "admin") {
+  if (req.user && (req.user.role === "admin" || req.user.role === "manager")) {
     next();
   } else {
     return res.status(403).json({ error: "Acesso restrito a administradores." });

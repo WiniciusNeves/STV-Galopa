@@ -2,16 +2,18 @@ import React from "react";
 import {
   Alert,
   Text,
-  View,
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { logout } from "../../service/userService";
 
-export default function Logout() {
+interface LogoutProps {
+  width?: number | string;
+}
+
+export default function Logout({ width = 36 }: LogoutProps) {
   const navigation = useNavigation();
 
   const handleLogout = async () => {
@@ -21,41 +23,68 @@ export default function Logout() {
         index: 0,
         routes: [{ name: "Auth" }],
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao fazer logout:", error.message);
       Alert.alert("Erro", "Erro ao realizar logout.");
     }
   };
 
+  const confirmLogout = () => {
+    Alert.alert(
+      "Sair do perfil",
+      "Você tem certeza que deseja sair?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Sair",
+          style: "destructive",
+          onPress: handleLogout,
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const isSmall = Number(width) <= 36;
+
   return (
-    <View>
-      <TouchableOpacity
-        style={styles.triggerButton}
-        onPress={handleLogout}
-      >
-        <Feather name="log-out" size={20} color="#fff" style={styles.icon} />
-        <Text style={styles.triggerButtonText}>Sair</Text>
-      </TouchableOpacity>
-    </View>
+    <TouchableOpacity
+      style={[
+        styles.button,
+        {
+          width: isSmall ? 50 : undefined,
+          height: isSmall ? 50 : undefined,
+          borderRadius: isSmall ? 25 : 50,
+          paddingHorizontal: isSmall ? 0 : 20,
+        },
+      ]}
+      onPress={confirmLogout} // Alterado aqui para chamar o modal de confirmação
+    >
+      <Feather
+        name="log-out"
+        size={isSmall ? 18 : 20}
+        color="#fff"
+        style={!isSmall && styles.icon}
+      />
+      {!isSmall && <Text style={styles.text}>Sair</Text>}
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  triggerButton: {
-    right: "80%",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+  button: {
     backgroundColor: "#A93021",
-    borderRadius: 50,
     flexDirection: "row",
     alignItems: "center",
-    width: "70%",
     justifyContent: "center",
   },
   icon: {
     marginRight: 8,
   },
-  triggerButtonText: {
+  text: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "600",
