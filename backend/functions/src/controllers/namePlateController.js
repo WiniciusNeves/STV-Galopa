@@ -34,7 +34,6 @@ const addName = async (req, res) => {
   }
 };
 
-// CORRIGIDO: Usa o ID do documento para atualizar
 const updateName = async (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
@@ -47,7 +46,6 @@ const updateName = async (req, res) => {
   }
 };
 
-// CORRIGIDO: Usa o ID do documento para deletar
 const deleteName = async (req, res) => {
   const { id } = req.params;
   try {
@@ -64,7 +62,6 @@ const deleteName = async (req, res) => {
 const getPlates = async (req, res) => {
   try {
     const snapshot = await db.collection("plates").get();
-    // Envia o objeto completo, incluindo o ID
     const plates = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     res.status(200).json(plates);
   } catch (err) {
@@ -92,7 +89,6 @@ const addPlate = async (req, res) => {
   }
 };
 
-// NOVO: Função para atualizar a placa usando o ID
 const updatePlate = async (req, res) => {
   const { id } = req.params;
   const { plate } = req.body;
@@ -105,7 +101,6 @@ const updatePlate = async (req, res) => {
   }
 };
 
-// CORRIGIDO: Usa o ID do documento para deletar
 const deletePlate = async (req, res) => {
   const { id } = req.params;
   try {
@@ -116,7 +111,47 @@ const deletePlate = async (req, res) => {
   }
 };
 
+
+// =============================================================
+// ▼▼▼ FUNÇÃO DE CARGA INICIAL (BULK ADD) ADICIONADA AQUI ▼▼▼
+// =============================================================
+const addItemsToCollections = async (req, res) => {
+  const nameOptions = [
+    "WELLINGTON", "ENIO", "DAVID", "JEFFERSON", "GUILHERME", "ROSSATO",
+    "RICARDO", "PATRIC", "GELSON", "PAZETTI", "CLAIRTON", "FILIPE",
+    "ALISSON", "RODRIGUES", "VITOR", "JAISSON", "RODRIGO",
+  ];
+
+  const allPlateOptions = [
+    "VTR ITI-2G11", "VTR IZH-0I60", "VTR IZH-0I61", "VTR ITI-2601",
+    "VTR JBG-5E41", "VTR IQK-6729", "VTR IRX-5961", "VTR JCA-3B44",
+    "VTR IXL-7951", "VTR IUS-4224", "VTR IZF-9H01", "VTR IPS-0702",
+    "VTR ITV-9121", "VTR JAN-8H35", "VTR JBD-9A35", "VTR JCG-2J65",
+    "VTR ILS-6968", "MOTO JAU-1B04", "MOTO TQP-3D33", "MOTO JDO-3D71",
+    "MOTO TQP-3D30", "MOTO JBS-2G79", "MOTO JAS-7B47", "MOTO EQR-6306",
+    "MOTO IYW-6385", "MOTO IYW-6403"
+  ];
+
+  try {
+    const namesCollection = db.collection('names');
+    const platesCollection = db.collection('plates');
+
+    const namePromises = nameOptions.map((name) => namesCollection.add({ name }));
+    const platePromises = allPlateOptions.map((plate) => platesCollection.add({ plate }));
+
+    await Promise.all([...namePromises, ...platePromises]);
+
+    res.status(200).json({ message: "Itens adicionados com sucesso às coleções 'names' e 'plates'!" });
+  } catch (error) {
+    console.error("Erro ao adicionar itens:", error);
+    res.status(500).json({ error: "Falha ao adicionar itens ao banco de dados." });
+  }
+};
+
+
+// --- EXPORTS ---
 module.exports = {
   getNames, addName, updateName, deleteName,
   getPlates, addPlate, updatePlate, deletePlate,
+  addItemsToCollections, // <-- IMPORTANTE: ADICIONADO AQUI
 };

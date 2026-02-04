@@ -24,8 +24,8 @@ export default function App() {
 
         if (!isLoadingAuth && !hasNavigated.current) {
             if (user) {
-                if (userRole === 'admin') {
-                    console.info('App - Navegando para ReportListScreen (Admin)');
+                if (userRole === 'admin' || userRole === 'manager') {
+                    console.info('App - Navegando para ReportListScreen (Admin/Gerente)');
                     navigation.replace('ReportListScreen');
                     hasNavigated.current = true;
                 } else if (userRole === 'user') {
@@ -33,7 +33,7 @@ export default function App() {
                     navigation.replace('Register');
                     hasNavigated.current = true;
                 } else {
-                    console.warn('App - Usuário logado com role inesperado. Navegando para Auth.');
+                    console.warn('App - Usu rio logado com role inesperado. Navegando para Auth.');
                     navigation.replace('Auth');
                     hasNavigated.current = true;
                 }

@@ -11,12 +11,9 @@ const {
   updatePlate,
   deleteName,
   deletePlate,
+  addItemsToCollections
 } = require('../controllers/namePlateController');
 
-const { authenticate, isAdmin } = require('../middlewares/authMiddleware');
-
-
-router.use(authenticate, isAdmin);
 
 // --- Rotas para Nomes ---
 router.get('/names', getNames);
@@ -29,5 +26,8 @@ router.get('/plates', getPlates);
 router.post('/plates', addPlate);
 router.put('/plates/:id', updatePlate);
 router.delete('/plates/:id', deletePlate);
+
+// No seu arquivo de rotas...
+router.post('/add-initial-data', addItemsToCollections);
 
 module.exports = router;

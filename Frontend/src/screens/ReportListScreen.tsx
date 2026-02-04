@@ -144,7 +144,7 @@ export default function ReportListScreen() {
                     style={styles.logoImage}
                 />
                 <View style={styles.actionsContainer}>
-                    <Edit onPress={() => navigation.navigate("AddListScreen")} style={{ marginLeft: 8 }} />
+                    {userRole === 'admin' && <Edit onPress={() => navigation.navigate("AddListScreen")} style={{ marginLeft: 8 }} />}
                     <Logout width="36" />
                 </View>
             </View>

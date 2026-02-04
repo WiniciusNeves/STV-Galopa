@@ -131,7 +131,7 @@ export default function LoginScreen() {
                             2025 STV Segurança 
                         </Text>
                         <Text style={{ color: colors.grey, textAlign: 'center' }}>
-                            Versão 1.20.3
+                            Versão 1.20.5
                         </Text>
                         <Image source={require('../assets/img/Ativo_8.png')} style={{ width: 200, height: 18, marginTop: 10 }} />
                     </View>
