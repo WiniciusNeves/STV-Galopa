@@ -7,14 +7,7 @@
     <list default="true" id="2d3f29c7-b421-40d3-a296-43494a906aa6" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/App.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/App.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/AppNavigator.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/AppNavigator.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/app.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/components/reports/ReportItem.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/components/reports/ReportItem.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/context/AuthContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/context/AuthContext.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/screens/Register.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/screens/Register.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/screens/ReportListScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/screens/ReportListScreen.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Frontend/src/service/authService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/src/service/authService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Frontend/package-lock.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,10 +37,10 @@
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;Api&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Winic/Desktop/STV-Galopa&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/usuario/Desktop/STV-Galopa&quot;,
     &quot;settings.editor.selected.configurable&quot;: &quot;advanced.settings&quot;,
     &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }
