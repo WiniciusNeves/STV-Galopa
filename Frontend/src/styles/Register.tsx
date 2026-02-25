@@ -40,13 +40,13 @@ export default StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginBottom: 10,
-    
+
   },
   checkboxContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
-    
+
   },
   checkboxLabel: {
     marginLeft: 8,
@@ -87,8 +87,11 @@ export default StyleSheet.create({
   },
   submitButton: {
     width: "100%",
-   
+
     alignItems: "center",
   },
-  
+  fullWidthItem: {
+    width: "100%",
+  },
+
 });

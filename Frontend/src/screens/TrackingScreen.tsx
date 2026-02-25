@@ -34,7 +34,6 @@ const styles = StyleSheet.create({
   },
   webview: {
     flex: 1,
-    marginBottom: 60, // espaço para o MenuBottom
   },
 });
 

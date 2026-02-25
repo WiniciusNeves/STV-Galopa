@@ -1,29 +1,35 @@
 import apiRouter from "./apiRouter";
-import { getAuthData } from "../service/authService"; // 🎉 MUDANÇA AQUI: IMPORTAR getAuthData 🎉
-import * as FileSystem from "expo-file-system";
+import { getAuthData } from "../service/authService";
 import { uploadImageAsync } from "./uploadService";
+import { Alert } from "react-native"; // ✨ Correção: Importar Alert aqui ✨
 
 const api = apiRouter;
 
-// Definindo o tipo Checklist
 export interface Checklist {
     id?: string;
+    sector: string;
     area: string;
     nome: string;
     placa: string;
     quilometragem: number;
     nivelCombustivel: string;
-    pneus: boolean;
-    temEstepe: boolean;
+    nivelOleo: string;
+    pneus: string;
+    temEstepe?: boolean;
+    relacaoTransmissao?: string;
+    temBau?: boolean;
+    temDocumento: boolean;
+    temCartaoCombustivel: boolean;
+    statusRecebimentoEntrega: string;
     descricao: string;
-    fotoUrls: string[]; // renomeie para bater com o backend
+    fotos: string[];
+    type: string;
+    vehicleCategory: string;
 }
 
-// Função auxiliar para adicionar o token ao cabeçalho da requisição
 const withAuth = async (config: any) => {
-    // 🎉 MUDANÇA AQUI: CHAMAR getAuthData E PEGAR O TOKEN 🎉
     const authData = await getAuthData();
-    const token = authData.token; // Pega o token do objeto retornado
+    const token = authData.token;
 
     if (token) {
         config.headers = {
@@ -34,7 +40,6 @@ const withAuth = async (config: any) => {
     return config;
 };
 
-// Buscar todos os checklists
 export const getChecklists = async (): Promise<Checklist[]> => {
     try {
         const response = await api.get('/checklists');
@@ -45,7 +50,6 @@ export const getChecklists = async (): Promise<Checklist[]> => {
     }
 };
 
-// Buscar checklist por ID
 export const getChecklistById = async (id: string): Promise<Checklist | null> => {
     try {
         const response = await api.get(`/checklists/${id}`);
@@ -56,21 +60,10 @@ export const getChecklistById = async (id: string): Promise<Checklist | null> =>
     }
 };
 
-// Criar novo checklist
-export const createChecklist = async (checklist: Checklist): Promise<Checklist | null> => {
-    try {
-        const response = await api.post('/checklists', checklist);
-        return response.data;
-    } catch (error) {
-        console.error('Erro ao criar checklist:', error);
-        return null;
-    }
-};
-
-// Atualizar checklist
 export const updateChecklist = async (id: string, checklist: Checklist): Promise<Checklist | null> => {
     try {
-        const response = await api.put(`/checklists/${id}`, checklist);
+        const config = await withAuth({});
+        const response = await api.put(`/checklists/${id}`, checklist, config);
         return response.data;
     } catch (error) {
         console.error('Erro ao atualizar checklist:', error);
@@ -78,10 +71,10 @@ export const updateChecklist = async (id: string, checklist: Checklist): Promise
     }
 };
 
-// Deletar checklist
 export const deleteChecklist = async (id: string): Promise<boolean> => {
     try {
-        await api.delete(`/checklists/${id}`);
+        const config = await withAuth({});
+        await api.delete(`/checklists/${id}`, config);
         return true;
     } catch (error) {
         console.error('Erro ao deletar checklist:', error);
@@ -89,25 +82,35 @@ export const deleteChecklist = async (id: string): Promise<boolean> => {
     }
 };
 
-// Função para criar um novo checklist com autenticação
+// Função para criar um novo checklist com autenticação E upload de fotos
 export const createChecklistWithAuth = async (
-    checklist: Checklist,
-    photos: { uri: string }[]
+    checklistData: Omit<Checklist, 'fotos' | 'id'>,
+    photoUris: string[] // ✨ CORREÇÃO AQUI: Espera um array de strings (URIs) diretamente ✨
 ): Promise<Checklist | null> => {
     try {
-        const uploadPromises = photos.map(photo => uploadImageAsync(photo.uri));
+        const uploadPromises = photoUris.map(uri => uploadImageAsync(uri)); // ✨ Correção: Passa a URI diretamente ✨
         const results = await Promise.allSettled(uploadPromises);
 
-        const fotoUrls = results
-            .filter(result => result.status === 'fulfilled')
-            .map(result => (result as PromiseFulfilledResult<string>).value); // Adicionado cast para garantir tipo
+        const fotoUrls: string[] = [];
+        let uploadFailed = false;
 
-        if (fotoUrls.length !== photos.length) {
-            console.warn("Algumas fotos não puderam ser enviadas.");
+        results.forEach((result, index) => {
+            if (result.status === 'fulfilled' && result.value !== null) {
+                fotoUrls.push(result.value);
+            } else {
+                uploadFailed = true;
+                console.error(`Falha no upload da foto ${index + 1}:`,
+                    result.status === 'rejected' ? result.reason : "Upload retornou null/undefined");
+            }
+        });
+
+        if (uploadFailed) {
+            Alert.alert("Erro de Upload", "Algumas fotos não puderam ser carregadas. Tente novamente.");
+            throw new Error("Não foi possível carregar todas as fotos.");
         }
 
-        const dataToSend = {
-            ...checklist,
+        const dataToSend: Checklist = {
+            ...checklistData,
             fotos: fotoUrls,
         };
 
@@ -120,19 +123,18 @@ export const createChecklistWithAuth = async (
         const response = await api.post("/checklists", dataToSend, config);
         return response.data;
     } catch (error) {
-        console.error("Erro ao criar checklist:", error);
+        console.error("Erro ao criar checklist (com upload de fotos):", error);
         return null;
     }
 };
 
-// Função para buscar todos os checklists com autenticação
-export const getChecklistsWithAuth = async (): Promise<Checklist[]> => {
+export const getChecklistsWithAuth = async (id: string): Promise<Checklist | null> => {
     try {
         const config = await withAuth({});
-        const response = await api.get('/checklists', config);
+        const response = await api.get(`/checklists`, config);
         return response.data;
     } catch (error) {
-        console.error('Erro ao buscar checklists com autenticação:', error);
-        return [];
+        console.error('Erro ao buscar checklist com autenticação:', error);
+        return null;
     }
-};
+}

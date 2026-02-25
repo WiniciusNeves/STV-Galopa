@@ -11,10 +11,10 @@
     "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/icon.png",
       "backgroundColor": "#001C12"
     },
     "ios": {
@@ -24,19 +24,19 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
-        "backgroundColor": "#001C12"
+        "backgroundColor": "#90dec6"
       },
       "package": "com.stvgalope.app",
       "versionCode": 1
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/icon.png"
     },
     "assetBundlePatterns": [
       "assets/*"
     ],
     "owner": "wneves",
-    "iosStatusBarStyle": "light-content"
+    "backgroundColor": "#0b2b1b"
   }
 }
 

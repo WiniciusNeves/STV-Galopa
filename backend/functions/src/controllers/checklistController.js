@@ -9,34 +9,65 @@ exports.createChecklist = async (req, res) => {
       placa,
       quilometragem,
       nivelCombustivel,
+      nivelOleo,
       pneus,
       temEstepe,
+      relacaoTransmissao,
+      temBau,
       descricao,
-      fotos = [] // URLs das imagens já enviadas para o Firebase Storage
+      fotos = [],
+      type,
+      sector,
+      vehicleCategory,
+      temDocumento,
+      temCartaoCombustivel,
+      statusRecebimentoEntrega,
     } = req.body;
 
-    if (!area || !nome || !placa) {
-      return res.status(400).json({ error: "Campos obrigatórios ausentes." });
+    if (!sector || !nome || !placa || !vehicleCategory || !statusRecebimentoEntrega) {
+      return res.status(400).json({ error: "Campos obrigatórios ausentes: Setor, Nome, Placa, Tipo de Veículo e Status de Recebimento/Entrega." });
     }
 
+    if (sector === "PRONTO ATENDIMENTO" && !area) {
+      return res.status(400).json({ error: "Para o setor 'Pronto Atendimento', a Área é obrigatória." });
+    }
+
+    const hasSpareTire = ["true", true, "sim"].includes(temEstepe);
+    const hasTrunk = ["true", true, "sim"].includes(temBau);
+    const hasDocumento = ["true", true, "sim"].includes(temDocumento);
+    const hasFuelCard = ["true", true, "sim"].includes(temCartaoCombustivel);
+
     const checklistData = {
-      area,
+      sector,
+      area: area || null,
       nome,
       placa,
       quilometragem,
       nivelCombustivel,
+      nivelOleo,
       pneus,
-      temEstepe: ["true", true, "sim"].includes(temEstepe),
       descricao,
       fotos,
-      createdAt: new Date(),
+      type: type ? type.toLowerCase() : null,
+      vehicleCategory,
+      temDocumento: hasDocumento,
+      temCartaoCombustivel: hasFuelCard,
+      statusRecebimentoEntrega,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
 
-    await db.collection("checklists").add(checklistData);
+    if (type && type.toLowerCase() === "carro") {
+      checklistData.temEstepe = hasSpareTire;
+    } else if (type && type.toLowerCase() === "moto") {
+      checklistData.relacaoTransmissao = relacaoTransmissao;
+      checklistData.temBau = hasTrunk;
+    }
+
+    const docRef = await db.collection("checklists").add(checklistData);
 
     return res.status(201).json({
       message: "Checklist criado com sucesso!",
-      data: checklistData,
+      data: { id: docRef.id, ...checklistData },
     });
   } catch (error) {
     console.error("Erro ao criar checklist:", error);
@@ -82,17 +113,7 @@ exports.getChecklistById = async (req, res) => {
 exports.updateChecklist = async (req, res) => {
   try {
     const { id } = req.params;
-    const {
-      area,
-      nome,
-      placa,
-      quilometragem,
-      nivelCombustivel,
-      pneus,
-      temEstepe,
-      descricao,
-      fotos = []
-    } = req.body;
+    const updateData = req.body;
 
     const checklistRef = db.collection("checklists").doc(id);
     const checklist = await checklistRef.get();
@@ -101,18 +122,22 @@ exports.updateChecklist = async (req, res) => {
       return res.status(404).json({ error: "Checklist não encontrado." });
     }
 
-    await checklistRef.update({
-      area,
-      nome,
-      placa,
-      quilometragem,
-      nivelCombustivel,
-      pneus,
-      temEstepe: ["true", true, "sim"].includes(temEstepe),
-      descricao,
-      fotos,
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    if (Object.prototype.hasOwnProperty.call(updateData, "temEstepe")) {
+      updateData.temEstepe = ["true", true, "sim"].includes(updateData.temEstepe);
+    }
+    if (Object.prototype.hasOwnProperty.call(updateData, "temBau")) {
+      updateData.temBau = ["true", true, "sim"].includes(updateData.temBau);
+    }
+    if (Object.prototype.hasOwnProperty.call(updateData, "temDocumento")) {
+      updateData.temDocumento = ["true", true, "sim"].includes(updateData.temDocumento);
+    }
+    if (Object.prototype.hasOwnProperty.call(updateData, "temCartaoCombustivel")) {
+      updateData.temCartaoCombustivel = ["true", true, "sim"].includes(updateData.temCartaoCombustivel);
+    }
+
+    updateData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+
+    await checklistRef.update(updateData);
 
     res.status(200).json({ message: "Checklist atualizado com sucesso!" });
   } catch (error) {
@@ -138,3 +163,4 @@ exports.deleteChecklist = async (req, res) => {
     res.status(500).json({ error: "Erro ao deletar checklist." });
   }
 };
+

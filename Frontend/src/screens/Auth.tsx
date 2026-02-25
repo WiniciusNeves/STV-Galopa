@@ -16,14 +16,17 @@ import Input from '../components/auth/Input';
 import PasswordInput from '../components/auth/PasswordInput';
 import GradientButton from '../components/auth/GradientButton';
 import RememberSwitch from '../components/auth/RememberSwitch';
-import { login } from '../service/userService';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen() {
     const navigation = useNavigation<any>();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [remember, setRemember] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
+
     const [loading, setLoading] = useState(false);
+
+    const { login } = useAuth();
 
     const handleLogin = async () => {
         if (!email || !password) {
@@ -32,7 +35,7 @@ export default function LoginScreen() {
         }
         setLoading(true);
         try {
-            const user = await login(email.trim(), password);
+            const user = await login(email, password, rememberMe);
 
             if (!user) {
                 Alert.alert('Erro', 'Usuário ou senha inválidos.');
@@ -41,8 +44,10 @@ export default function LoginScreen() {
 
             if (user.role === 'admin') {
                 navigation.replace('ReportListScreen');
+            } else if (user.role === 'user') {
+                navigation.replace('ChecklistScreen');
             } else {
-                navigation.replace('Register');
+                navigation.replace('Auth');
             }
         } catch (error: any) {
             Alert.alert('Erro', error.message || 'Erro ao realizar login.');
@@ -51,6 +56,7 @@ export default function LoginScreen() {
             setLoading(false);
         }
     };
+
 
     return (
         <KeyboardAvoidingView
@@ -112,8 +118,8 @@ export default function LoginScreen() {
                             }}
                         >
                             <RememberSwitch
-                                value={remember}
-                                onValueChange={setRemember}
+                                value={rememberMe}
+                                onValueChange={setRememberMe}
                             />
                         </View>
 
@@ -133,3 +139,4 @@ export default function LoginScreen() {
         </KeyboardAvoidingView>
     );
 }
+

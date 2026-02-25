@@ -9,11 +9,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 10,
+
   },
   logoImage: {
     width: "100%",
-    marginBottom: 10,
+    marginBottom: 20,
   },
   logoutContainer: {
     padding: 5,
@@ -93,8 +93,11 @@ const styles = StyleSheet.create({
   },
 
   photoContainer: {
-    flexDirection: 'row',
-    margin: 10,
+    flexDirection: 'row',     // Coloca as imagens lado a lado
+    flexWrap: 'wrap',         // O SEGREDO: permite quebrar para a linha de baixo
+    justifyContent: 'flex-start', // Alinha as imagens no começo da linha
+    gap: 8,                   // (Opcional) Adiciona um espaço entre as fotos se o seu RN suportar
+    marginTop: 10,
 
   },
   photo: {
@@ -161,9 +164,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 6,
   },
-  backButton: {	
+  backButton: {
     position: 'absolute',
-    top: 80,
+    top: 105,
     left: 20,
     zIndex: 2,
     backgroundColor: 'rgba(0,0,0,0.6)',
