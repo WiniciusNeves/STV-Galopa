@@ -26,7 +26,7 @@ interface Report {
   temEstepe: boolean;
   pneus: boolean;
   descricao: string;
-  fotos: string[];
+  fotos: any[]; // Mudamos para any[] porque não confiamos no payload externo
   createdAt: any;
 }
 
@@ -54,8 +54,29 @@ export default function ReportDetailScreen() {
 
   const dateObj = getDateObject(report?.createdAt);
 
-  const handleImagePress = (uri: string) => {
-    setSelectedImage(uri);
+  // --- PROGRAMAÇÃO DEFENSIVA ---
+  // Esta função garante que sempre retornaremos uma String, não importa a bagunça 
+  // que o backend ou o banco de dados mande no array de fotos.
+  const getSafeImageUrl = (photoItem: any): string => {
+    if (!photoItem) return '';
+
+    // Se já for uma string (comportamento ideal)
+    if (typeof photoItem === 'string') {
+      return photoItem;
+    }
+
+    // Se for um objeto disfarçado (a causa do seu erro na tela vermelha)
+    if (typeof photoItem === 'object') {
+      // Tenta extrair as propriedades mais comuns de imagens
+      return photoItem.uri || photoItem.url || photoItem.link || '';
+    }
+
+    return '';
+  };
+
+  const handleImagePress = (rawPhotoItem: any) => {
+    const safeUrl = getSafeImageUrl(rawPhotoItem);
+    setSelectedImage(safeUrl);
     setModalVisible(true);
   };
 
@@ -125,11 +146,19 @@ export default function ReportDetailScreen() {
         <Text style={styles.label}>Fotos</Text>
         <View style={styles.photoContainer}>
           {report?.fotos?.length ? (
-            report.fotos.map((url, idx) => (
-              <TouchableOpacity key={idx} onPress={() => handleImagePress(url)}>
-                <Image source={{ uri: url }} style={styles.photo} />
-              </TouchableOpacity>
-            ))
+            report.fotos.map((item, idx) => {
+              // Passamos a variável bruta por garantia
+              const safeUrl = getSafeImageUrl(item);
+
+              // Se a extração falhar (ex: objeto vazio), não renderiza a imagem quebrada
+              if (!safeUrl) return null;
+
+              return (
+                <TouchableOpacity key={idx} onPress={() => handleImagePress(item)}>
+                  <Image source={{ uri: safeUrl }} style={styles.photo} />
+                </TouchableOpacity>
+              );
+            })
           ) : (
             <Text style={styles.noPhotosText}>Nenhuma foto disponível</Text>
           )}
@@ -145,10 +174,13 @@ export default function ReportDetailScreen() {
           >
             <Ionicons name="close" size={30} color="#fff" />
           </TouchableOpacity>
-          <Image source={{ uri: selectedImage || '' }} style={styles.modalImage} />
+          {/* Garante que o Modal só tenta carregar se houver uma URL válida */}
+          {selectedImage ? (
+            <Image source={{ uri: selectedImage }} style={styles.modalImage} />
+          ) : null}
         </View>
       </Modal>
-      
+
       {/* Botão de voltar */}
       <Pressable
         style={styles.backButton}
@@ -156,7 +188,7 @@ export default function ReportDetailScreen() {
       >
         <Ionicons name="arrow-back" size={30} color="#fff" />
       </Pressable>
-      
+
 
       {/* Rodapé */}
       <MenuBottom userRole={userRole} />
